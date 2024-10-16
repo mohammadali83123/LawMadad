@@ -29,7 +29,7 @@ export default function TabLayout() {
                         </TouchableOpacity>
                     ),
                 }}>
-                <Tabs.Screen name='home' options={{ title: 'Home' }} />
+                <Tabs.Screen name='home' options={{ title: 'home' }} />
                 <Tabs.Screen name='setting' options={{ title: 'Settings' }} />
             </Tabs>
 
