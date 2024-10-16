@@ -18,16 +18,19 @@ export default function home() {
       <View style={{
         justifyContent: "flex-end",
         marginTop:20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
       }}>
         <TextInput placeholder='Enter your query' keyboardType='default'
           value={inputQuery} onChangeText={(text) => setInputQuery(text)} style={{
             height: 40,
+            flex: 1, 
             borderColor: 'gray',
             borderWidth: 1,
-            paddingHorizontal: 10,
-            marginBottom: 20,
             borderRadius: 5,
-            paddingEnd: 10,
+            paddingHorizontal: 10,
+            marginRight: 10,
           }}>
         </TextInput>
         <Button title="Submit" onPress={() => { console.log("Quesry Submitted Input Query is this\n", inputQuery); setRespondedQuery(inputQuery); }} />
