@@ -1,9 +1,23 @@
 import { View, TextInput, Button, Text, ScrollView, StyleSheet } from 'react-native';
 import React, { useState } from 'react';
+import axios from 'axios'; // Import Axios
 
 export default function Home() {
   const [inputQuery, setInputQuery] = useState('');
   const [respondedQuery, setRespondedQuery] = useState('');
+
+  // Function to handle API call
+  const handleQuerySubmit = async () => {
+    try {
+      console.log("Query Submitted. Input Query is:", inputQuery);
+      const response = await axios.post('http://192.168.100.252:8080/query', { query: inputQuery }); // Call API
+      console.log(response.data.response);
+      setRespondedQuery(response.data.response); // Assume the response has an "answer" field
+    } catch (error) {
+      console.error("Error fetching response:", error);
+      setRespondedQuery("An error occurred while fetching the response.");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -20,17 +34,14 @@ export default function Home() {
           value={inputQuery} 
           onChangeText={(text) => setInputQuery(text)} 
           multiline
-          numberOfLines={5} // Set default number of lines
-          style={styles.textArea} // Use the text area style
-          textAlignVertical="top" // Align text to the top
+          numberOfLines={5}
+          style={styles.textArea}
+          textAlignVertical="top"
         />
         <Button 
           title="Submit" 
-          color="#28a745" // Green button color
-          onPress={() => { 
-            console.log("Query Submitted. Input Query is:", inputQuery); 
-            setRespondedQuery(inputQuery); 
-          }} 
+          color="#28a745"
+          onPress={handleQuerySubmit} // Call the API on submit
         />
       </View>
     </View>
@@ -58,7 +69,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.3,
     shadowRadius: 4,
-    elevation: 5, // For Android
+    elevation: 5,
   },
   queryHeader: {
     fontSize: 20,
@@ -75,7 +86,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   textArea: {
-    height: 100, // Adjusted initial height of the textarea
+    height: 100,
     borderColor: '#6c757d',
     borderWidth: 1,
     borderRadius: 5,
@@ -88,7 +99,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.2,
     shadowRadius: 2,
-    elevation: 3, // For Android
-    marginBottom:20,
+    elevation: 3,
+    marginBottom: 20,
   },
 });
