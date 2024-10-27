@@ -19,7 +19,8 @@ public class ModelResponse {
 
     @PostMapping("/query")
     public String modelResponese (@RequestBody Map<String, Object> requestBody){
-        String url = "http://127.0.0.1:8000/query";
+//        String url = "http://127.0.0.1:8000/query";
+        String url = "http://13.60.196.104/query";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
