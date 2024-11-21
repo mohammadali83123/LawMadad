@@ -10,7 +10,7 @@ export default function Home() {
   const handleQuerySubmit = async () => {
     try {
       console.log("Query Submitted. Input Query is:", inputQuery);
-      const response = await axios.post('http://192.168.100.252:8080/query', { query: inputQuery }); // Call API
+      const response = await axios.post('https://d883-35-204-73-116.ngrok-free.app/query', { query: inputQuery }); // Call API
       console.log(response.data.response);
       setRespondedQuery(response.data.response); // Assume the response has an "answer" field
     } catch (error) {
