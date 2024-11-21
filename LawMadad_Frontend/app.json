@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "LawMadad_Frontend",
-    "slug": "LawMadad_Frontend",
+    "name": "LawMadad",
+    "slug": "LawMadad",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.LawMadad"
@@ -34,8 +34,11 @@
       "typedRoutes": true
     },
     "extra": {
+      "router": {
+        "origin": false
+      },
       "eas": {
-        "projectId": "35be2045-45dc-4a8a-bb5e-e3fb9f034dde"
+        "projectId": "8bd1b543-c59e-4ec0-b205-f03ca089a609"
       }
     }
   }

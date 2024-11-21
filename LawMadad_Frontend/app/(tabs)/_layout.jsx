@@ -2,7 +2,7 @@ import { View, Image, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import React, { useState } from 'react';
 import { Tabs } from 'expo-router';
 
-const AppLogo = require("../../assets/images/LawMadad-icon.png");
+const AppLogo = require("../../assets/images/logo.png");
 
 export default function TabLayout() {
     const [modalVisible, setModalVisible] = useState(false);
