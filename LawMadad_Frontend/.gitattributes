@@ -2,10 +2,10 @@
 * text=auto
 
 # For specific file types, enforce Unix-style line endings
-*.sh text eol=lf  # Shell scripts should use LF line endings
+*.sh text eol=lf
 
 # For specific file types, enforce Windows-style line endings
-*.bat text eol=crlf  # Batch scripts should use CRLF line endings
+*.bat text eol=crlf
 
 # Mark files that should always be treated as binary
 *.png binary
@@ -14,4 +14,4 @@
 *.zip binary
 
 # Specify end-of-line normalization for Markdown files
-*.md text eol=lf  # Markdown files should use LF line endings
+*.md text eol=lf
