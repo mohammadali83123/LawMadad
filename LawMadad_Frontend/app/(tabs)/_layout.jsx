@@ -32,7 +32,7 @@ export default function TabLayout() {
                     ),
                 }}>
                 <Tabs.Screen name='home' options={{ title: 'Home' }} />
-                <Tabs.Screen name='setting' options={{ title: 'Settings' }} />
+                {/* <Tabs.Screen name='setting' options={{ title: 'Settings' }} /> */}
             </Tabs>
 
             {/* Modal to display full-sized image */}
