@@ -34,8 +34,12 @@ print("Public URL:", public_url)
 GROQ_API_KEY = "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"
 
 # Define the context path for PDF files
-input_files = ["/content/civil.pdf", "/content/constitution.pdf","/content/criminal.pdf", "/content/family.pdf" ]
-
+input_files = [
+    "civil.pdf",
+    "constitution.pdf",
+    "criminal.pdf",
+    "family.pdf",
+]
 
 # Preprocessing function for PDF text extraction
 def extract_text_from_pdf(file_path):
@@ -102,13 +106,6 @@ async def query_model(request: QueryRequest):
 
 # Run the server
 import uvicorn
-import nest_asyncio
 
-# Apply patch for nested event loop support
-nest_asyncio.apply()
-
-# Start the Uvicorn server
-config = uvicorn.Config(app=app, host="0.0.0.0", port=8000)
-server = uvicorn.Server(config)
-server.run()
-
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)

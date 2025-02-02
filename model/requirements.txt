@@ -8,4 +8,4 @@ fastapi
 uvicorn 
 ngrok 
 pyngrok
-"httpx<0.28"
+httpx<0.28
