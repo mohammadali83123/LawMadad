@@ -1,6 +1,7 @@
 import { View, TextInput, Text, Button, ScrollView, StyleSheet } from 'react-native';
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useRouter } from "expo-router";
 import Markdown from 'react-native-markdown-display';  // Import Markdown component
 
 export default function Home() {
