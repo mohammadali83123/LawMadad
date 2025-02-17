@@ -235,7 +235,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    padding: 10,
+    marginTop: 30,
     backgroundColor: "#2c2c2c",
   },
   headerTitle: {
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: "row",
-    padding: 16,
+    padding: 10,
     backgroundColor: "#2c2c2c",
   },
   input: {
