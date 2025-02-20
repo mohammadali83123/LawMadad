@@ -31,7 +31,7 @@ export default function LoginScreen() {
   const onPress = useCallback(async () => {
     try {
       const { createdSessionId, signIn, signUp, setActive } = await startOAuthFlow({
-        redirectUrl: Linking.createURL('/(tabs)/home', { scheme: 'LawMadad' }),
+        redirectUrl: Linking.createURL('/(tabs)/home', { scheme: 'myapp' }),
       })
 
       // If sign in was successful, set the active session
