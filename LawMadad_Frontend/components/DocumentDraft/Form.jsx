@@ -13,6 +13,7 @@ export default function Form() {
   const handleGenerateDocument = () => {
     // Implement document generation logic here
     console.log('Generating document...');
+    alert("Document Draft feature is coming soon...")
   };
 
   return (
