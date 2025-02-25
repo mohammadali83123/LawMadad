@@ -1,7 +1,18 @@
+"use client"
+
 import { useState } from "react"
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, SafeAreaView, Alert } from "react-native"
-import { StatusBar } from "expo-status-bar"
-import { Feather, FontAwesome5 } from "@expo/vector-icons"
+import {
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  Alert,
+  ActivityIndicator,
+} from "react-native"
+import { StatusBar } from "react-native"
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -51,6 +62,7 @@ export default function App() {
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
   const translateX = useSharedValue(-300)
   const hammerRotation = useSharedValue(0)
@@ -97,10 +109,11 @@ export default function App() {
 
     setMessages((prevMessages) => [...prevMessages, userMessage])
     setInput("")
+    setIsLoading(true)
 
     try {
       console.log("Sending query:", input)
-      const response = await fetch("https://2397-39-34-148-241.ngrok-free.app/query", {
+      const response = await fetch("https://c234-39-34-144-75.ngrok-free.app/query", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -139,6 +152,8 @@ export default function App() {
           isUser: false,
         },
       ])
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -173,16 +188,16 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar barStyle="light-content" />
       <View style={styles.header}>
         <TouchableOpacity onPress={toggleSidebar}>
-          <Feather name="menu" size={24} color="white" />
+          <Text style={styles.iconText}>☰</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Legal Assistant</Text>
       </View>
       <Animated.View style={[styles.sidebar, sidebarAnimatedStyles]}>
         <TouchableOpacity style={styles.closeButton} onPress={toggleSidebar}>
-          <Feather name="x" size={24} color="white" />
+          <Text style={styles.iconText}>✕</Text>
         </TouchableOpacity>
         <Text style={styles.sidebarTitle}>Menu</Text>
         <TouchableOpacity style={styles.sidebarItem}>
@@ -208,6 +223,12 @@ export default function App() {
             )}
           </View>
         ))}
+        {isLoading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#8b4513" />
+            <Text style={styles.loadingText}>Processing your request...</Text>
+          </View>
+        )}
       </ScrollView>
       <View style={styles.inputContainer}>
         <TextInput
@@ -216,10 +237,11 @@ export default function App() {
           onChangeText={setInput}
           placeholder="Ask a legal question..."
           placeholderTextColor="#999"
+          editable={!isLoading}
         />
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={isLoading}>
           <Animated.View style={hammerAnimatedStyles}>
-            <FontAwesome5 name="gavel" size={24} color="white" />
+            <Text style={styles.iconText}>⚖️</Text>
           </Animated.View>
         </TouchableOpacity>
       </View>
@@ -336,6 +358,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
+  },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+  },
+  loadingText: {
+    color: "white",
+    fontSize: 16,
+    marginTop: 8,
+  },
+  iconText: {
+    color: "white",
+    fontSize: 24,
   },
 })
 
