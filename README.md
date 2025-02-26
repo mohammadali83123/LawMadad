@@ -67,5 +67,5 @@ Feel free to fork the repository and submit pull requests. For major changes, pl
 This project is licensed under the MIT License.
 
 ## Contact
-For any issues, contact **Mohammad Ali** at **mohammadali83123.com**.
+For any issues, contact **Mohammad Ali** at **mohammadali83123@gmail.com**.
 
