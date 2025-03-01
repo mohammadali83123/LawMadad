@@ -2,23 +2,23 @@ import { View, Text, Image } from 'react-native'
 import React from 'react'
 import Colors from './../../constants/Colors'
 import { Pressable } from 'react-native'
-import {useRouter} from 'expo-router'
+import { useRouter } from 'expo-router'
 
 
 
 export default function Home() {
-  
+
   const router = useRouter();
 
   const onPress = () => {
-    router.push('/login/loginScreen');  
+    router.push('/login/loginScreen');
   }
 
   return (
     <View style={{
       backgroundColor: Colors.WHITE,
-      height:'100%'
-      
+      height: '100%'
+
     }}>
       <Image style={{ width: '100%', height: 400 }} source={require("./../../assets/images/logo.png")} />
       <View style={{
