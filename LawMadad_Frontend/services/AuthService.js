@@ -9,11 +9,16 @@ import {
 } from "firebase/auth";
 import * as WebBrowser from "expo-web-browser";
 import { useAuthRequest } from "expo-auth-session/providers/google"; 
+import { sendEmailVerification } from "firebase/auth";
 
 // Sign Up
 export const signUpWithEmail = async (email, password) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    
+    // Send verification email
+    await sendEmailVerification(userCredential.user);
+    
     return userCredential.user;
   } catch (error) {
     console.error("Sign up error:", error.message);
@@ -22,19 +27,25 @@ export const signUpWithEmail = async (email, password) => {
 };
 
 // Login
-export const loginWithEmail = async (email, password) => {
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-  if (!emailRegex.test(email)) {
-    throw new Error("Invalid email address");
-  }
+export const signInWithEmail = async (email, password) => {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+    // Check if the email is verified
+    if (!userCredential.user.emailVerified) {
+      throw new Error("Email not verified. Please check your inbox.");
+    }
+
     return userCredential.user;
   } catch (error) {
-    console.error("Login error:", error.message);
+    console.error("Sign in error:", error.message);
+    return null;
     throw error;
+    
   }
 };
+
 
 // Logout
 export const logout = async () => {
