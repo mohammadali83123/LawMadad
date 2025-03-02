@@ -17,7 +17,7 @@ import {
 import {useRouter} from 'expo-router';
 import { useAuthRequest } from "expo-auth-session/providers/google";
 import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
-import { loginWithEmail, signUpWithEmail, sendOTP, verifyOTP } from "../../services/AuthService";
+import { signInWithEmail , signUpWithEmail, sendOTP, verifyOTP } from "../../services/AuthService";
 import { signInWithEmailAndPassword} from 'firebase/auth'
 import { auth } from '../../Config/FirebaseConfig'
 
@@ -56,35 +56,46 @@ const LoginScreen = () => {
     handleGoogleSignIn(); // This ensures sign-in happens automatically on response change
   }, [response]);
 
-  const handleLogin = () => {
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-    if(!emailRegex.test(email)) {
-      Alert.alert("Invalid Email", "Please enter a valid email address");
-      console.log("Invalid Email");
-      return;
-    }
+  // const handleLogin = () => {
+  //   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+  //   if(!emailRegex.test(email)) {
+  //     Alert.alert("Invalid Email", "Please enter a valid email address");
+  //     console.log("Invalid Email");
+  //     return;
+  //   }
 
-    signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      const user = userCredential.user;
-      Alert.alert("Login Successful", `Welcome back, ${user.email}`);
-      console.log("Login Successful:", userCredential.user);
-      router.replace('/(tabs)/home');
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      Alert.alert("Login Failed", error.message);
-      console.error("Login Error:", error);
+  //   signInWithEmailAndPassword(auth, email, password)
+  //   .then((userCredential) => {
+  //     const user = userCredential.user;
+  //     Alert.alert("Login Successful", `Welcome back, ${user.email}`);
+  //     console.log("Login Successful:", userCredential.user);
+  //     router.replace('/(tabs)/home');
+  //   })
+  //   .catch((error) => {
+  //     const errorCode = error.code;
+  //     const errorMessage = error.message;
+  //     Alert.alert("Login Failed", error.message);
+  //     console.error("Login Error:", error);
     
-    });
-  };
+  //   });
+  // };
+
   const handleAuth = async () => {
     try {
       if (isSignUp) {
-        // await signUpWithEmail(email, password);
+        await signUpWithEmail(email, password);
+        Alert.alert("Verify Email", "Check your mailbox for a verification email");
       } else {
-        await handleLogin();
+        const user = await signInWithEmail(email,password);
+        
+        if(user){
+          Alert.alert("Login Successful", `Welcome back, ${user.email}`);
+          console.log("Login Successful:", user);
+          router.replace('/(tabs)/home');
+        }
+        else{
+          Alert.alert("Login Failed", "Invalid email or password, \nTry again");
+        }
       }
     } catch (error) {
       console.error("Authentication error:", error);
