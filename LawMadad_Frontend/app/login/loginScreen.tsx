@@ -40,45 +40,22 @@ const LoginScreen = () => {
   });
 
   const handleGoogleSignIn = async () => {
-    if (response?.type === "success" && response.authentication?.idToken) {
-      console.log("Google Auth Response:", response);
-      const { idToken } = response.authentication;
-      const credential = GoogleAuthProvider.credential(idToken);
-      signInWithCredential(auth, credential)
-        .then(() => console.log("Google Sign-In Successful"))
-        .catch((error) => console.error("Google Sign-In Error:", error));
-    } else {
-      console.log("Google Auth Failed:", response);
-    }
+    // if (response?.type === "success" && response.authentication?.idToken) {
+    //   console.log("Google Auth Response:", response);
+    //   const { idToken } = response.authentication;
+    //   const credential = GoogleAuthProvider.credential(idToken);
+    //   signInWithCredential(auth, credential)
+    //     .then(() => console.log("Google Sign-In Successful"))
+    //     .catch((error) => console.error("Google Sign-In Error:", error));
+    // } else {
+    //   console.log("Google Auth Failed:", response);
+    // }
   };
 
   useEffect(() => {
     handleGoogleSignIn(); // This ensures sign-in happens automatically on response change
   }, [response]);
 
-  // const handleLogin = () => {
-  //   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-  //   if(!emailRegex.test(email)) {
-  //     Alert.alert("Invalid Email", "Please enter a valid email address");
-  //     console.log("Invalid Email");
-  //     return;
-  //   }
-
-  //   signInWithEmailAndPassword(auth, email, password)
-  //   .then((userCredential) => {
-  //     const user = userCredential.user;
-  //     Alert.alert("Login Successful", `Welcome back, ${user.email}`);
-  //     console.log("Login Successful:", userCredential.user);
-  //     router.replace('/(tabs)/home');
-  //   })
-  //   .catch((error) => {
-  //     const errorCode = error.code;
-  //     const errorMessage = error.message;
-  //     Alert.alert("Login Failed", error.message);
-  //     console.error("Login Error:", error);
-    
-  //   });
-  // };
 
   const handleAuth = async () => {
     try {
