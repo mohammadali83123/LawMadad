@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   View,
   TextInput,
@@ -15,11 +15,7 @@ import {
   Alert,
 } from "react-native";
 import {useRouter} from 'expo-router';
-import { useAuthRequest } from "expo-auth-session/providers/google";
-import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { signInWithEmail , signUpWithEmail, sendOTP, verifyOTP } from "../../services/AuthService";
-import { signInWithEmailAndPassword} from 'firebase/auth'
-import { auth } from '../../Config/FirebaseConfig'
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
@@ -32,29 +28,9 @@ const LoginScreen = () => {
 
   const router = useRouter();
 
-  // Google Auth Hook
-  const [request, response, promptAsync] = useAuthRequest({
-    clientId: "12927819528-sm2cqsf5kol6i951pe2bk5v3k5bb05sg.apps.googleusercontent.com",
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-    redirectUri: "https://auth.expo.io/@mohammadali83123/LawMadad",
-  });
 
   const handleGoogleSignIn = async () => {
-    // if (response?.type === "success" && response.authentication?.idToken) {
-    //   console.log("Google Auth Response:", response);
-    //   const { idToken } = response.authentication;
-    //   const credential = GoogleAuthProvider.credential(idToken);
-    //   signInWithCredential(auth, credential)
-    //     .then(() => console.log("Google Sign-In Successful"))
-    //     .catch((error) => console.error("Google Sign-In Error:", error));
-    // } else {
-    //   console.log("Google Auth Failed:", response);
-    // }
   };
-
-  useEffect(() => {
-    handleGoogleSignIn(); // This ensures sign-in happens automatically on response change
-  }, [response]);
 
 
   const handleAuth = async () => {
@@ -157,9 +133,7 @@ const LoginScreen = () => {
 
               <TouchableOpacity
                 style={styles.socialButton}
-                onPress={async () => {
-                  await promptAsync();
-                }}
+                onPress={handleGoogleSignIn}
               >
                 <Image source={{ uri: "https://placeholder.svg?height=24&width=24" }} style={styles.socialIcon} />
                 <Text style={styles.socialButtonText}>Continue with Google</Text>
