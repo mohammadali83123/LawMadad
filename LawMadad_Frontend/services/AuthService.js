@@ -2,13 +2,11 @@ import { auth } from "../Config/FirebaseConfig";
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
-  signOut, 
-  GoogleAuthProvider, 
+  signOut,
   signInWithCredential, 
   PhoneAuthProvider 
 } from "firebase/auth";
-import * as WebBrowser from "expo-web-browser";
-import { useAuthRequest } from "expo-auth-session/providers/google"; 
+
 import { sendEmailVerification } from "firebase/auth";
 
 // Sign Up
@@ -56,31 +54,6 @@ export const logout = async () => {
   }
 };
 
-// Fix Google Sign-In Hook Issue
-// WebBrowser.maybeCompleteAuthSession();
-
-// export const useGoogleAuth = () => {
-//   const [request, response, promptAsync] = useAuthRequest({
-//     expoClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-//     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-//   });
-
-//   const handleGoogleSignIn = async () => {
-//     try {
-//       const result = await promptAsync();
-//       if (result?.type === "success") {
-//         const { id_token } = result.authentication;
-//         const credential = GoogleAuthProvider.credential(id_token);
-//         return signInWithCredential(auth, credential);
-//       }
-//     } catch (error) {
-//       console.error("Google Sign-In Error:", error);
-//       throw error;
-//     }
-//   };
-
-//   return { handleGoogleSignIn };
-// };
 
 // Phone Authentication (Corrected)
 export const sendOTP = async (phoneNumber, setVerificationId) => {
