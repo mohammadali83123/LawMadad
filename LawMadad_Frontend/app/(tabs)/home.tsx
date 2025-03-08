@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   StyleSheet,
   View,
@@ -27,25 +27,17 @@ type FormattedContent = {
 }
 
 const formatResponse = (text: string): FormattedContent[] => {
-  // Split the text into paragraphs
   const paragraphs = text.split("\n\n")
-
-  // Process each paragraph
   return paragraphs.map((paragraph): FormattedContent => {
-    // Check if the paragraph is a header (starts with **, is in all caps, or starts with ###)
     if (paragraph.startsWith("**") && paragraph.endsWith("**")) {
       return { type: "header", content: paragraph.replace(/\*\*/g, "") }
     } else if (paragraph === paragraph.toUpperCase() && paragraph.length > 3) {
       return { type: "header", content: paragraph }
     } else if (paragraph.startsWith("### ")) {
       return { type: "header", content: paragraph.replace(/^### /, "").replace(/\*\*/g, "") }
-    }
-    // Check if the paragraph is a list item
-    else if (paragraph.startsWith("* ")) {
+    } else if (paragraph.startsWith("* ")) {
       return { type: "listItem", content: paragraph.substring(2) }
-    }
-    // Regular paragraph
-    else {
+    } else {
       return { type: "paragraph", content: paragraph }
     }
   })
@@ -64,13 +56,19 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
 
+  const scrollViewRef = useRef<ScrollView | null>(null)
+
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true })
+    }
+  }, [messages])
+
   const translateX = useSharedValue(-300)
   const hammerRotation = useSharedValue(0)
 
   const sidebarAnimatedStyles = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: translateX.value }],
-    }
+    return { transform: [{ translateX: translateX.value }] }
   })
 
   const hammerAnimatedStyles = useAnimatedStyle(() => {
@@ -105,34 +103,23 @@ export default function App() {
       isUser: true,
     }
 
-    console.log("UserMessage:", JSON.stringify(userMessage))
-
     setMessages((prevMessages) => [...prevMessages, userMessage])
     setInput("")
     setIsLoading(true)
     setIsTyping(true)
 
     try {
-      console.log("Sending query:", input)
       const response = await fetch("https://ali4568-lawmadad.hf.space/query/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: input }),
       })
 
-      console.log("Response status:", response.status)
-
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error("Error response:", errorText)
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
-      console.log("API response:", JSON.stringify(data))
-
       const formattedResponse = formatResponse(data.response)
 
       const apiMessage: Message = {
@@ -143,15 +130,10 @@ export default function App() {
 
       setMessages((prevMessages) => [...prevMessages, apiMessage])
     } catch (error) {
-      console.error("Error fetching response:", error)
       showAlert("Error", "There was an error processing your request. Please try again.")
       setMessages((prevMessages) => [
         ...prevMessages,
-        {
-          id: messages.length + 1,
-          content: "Sorry, there was an error processing your request.",
-          isUser: false,
-        },
+        { id: messages.length + 1, content: "Sorry, there was an error.", isUser: false },
       ])
     } finally {
       setIsLoading(false)
@@ -167,99 +149,52 @@ export default function App() {
     return content.map((item, index) => {
       switch (item.type) {
         case "header":
-          return (
-            <Text key={index} style={styles.headerText}>
-              {item.content}
-            </Text>
-          )
+          return <Text key={index} style={styles.headerText}>{item.content}</Text>
         case "listItem":
-          return (
-            <Text key={index} style={styles.listItemText}>
-              • {item.content}
-            </Text>
-          )
+          return <Text key={index} style={styles.listItemText}>• {item.content}</Text>
         case "paragraph":
-          return (
-            <Text key={index} style={styles.paragraphText}>
-              {item.content}
-            </Text>
-          )
+          return <Text key={index} style={styles.paragraphText}>{item.content}</Text>
       }
     })
   }
 
   const TypingIndicator = () => {
     const [dots, setDots] = useState("")
-
     useEffect(() => {
       if (isTyping) {
         const interval = setInterval(() => {
           setDots((prev) => (prev.length < 3 ? prev + "." : ""))
         }, 500)
-
         return () => clearInterval(interval)
       }
     }, [isTyping])
-
-    return (
-      <View style={styles.typingContainer}>
-        <Text style={styles.typingText}>Typing{dots}</Text>
-      </View>
-    )
+    return <View style={styles.typingContainer}><Text style={styles.typingText}>Typing{dots}</Text></View>
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <View style={styles.header}>
-        <TouchableOpacity onPress={toggleSidebar}>
-          <Text style={styles.iconText}>☰</Text>
-        </TouchableOpacity>
+        <TouchableOpacity onPress={toggleSidebar}><Text style={styles.iconText}>☰</Text></TouchableOpacity>
         <Text style={styles.headerTitle}>Legal Assistant</Text>
       </View>
       <Animated.View style={[styles.sidebar, sidebarAnimatedStyles]}>
-        <TouchableOpacity style={styles.closeButton} onPress={toggleSidebar}>
-          <Text style={styles.iconText}>✕</Text>
-        </TouchableOpacity>
+        <TouchableOpacity style={styles.closeButton} onPress={toggleSidebar}><Text style={styles.iconText}>✕</Text></TouchableOpacity>
         <Text style={styles.sidebarTitle}>Menu</Text>
-        <TouchableOpacity style={styles.sidebarItem}>
-          <Text style={styles.sidebarItemText}>New Consultation</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.sidebarItem}>
-          <Text style={styles.sidebarItemText}>Case History</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.sidebarItem}>
-          <Text style={styles.sidebarItemText}>Legal Resources</Text>
-        </TouchableOpacity>
       </Animated.View>
-      <ScrollView style={styles.chatContainer}>
+      <ScrollView ref={scrollViewRef} style={styles.chatContainer}
+        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}>
         {messages.map((message) => (
-          <View
-            key={message.id}
-            style={[styles.messageContainer, message.isUser ? styles.userMessage : styles.apiMessage]}
-          >
-            {message.isUser ? (
-              <Text style={styles.messageText}>{message.content as string}</Text>
-            ) : (
-              renderFormattedContent(message.content as FormattedContent[])
-            )}
+          <View key={message.id} style={[styles.messageContainer, message.isUser ? styles.userMessage : styles.apiMessage]}>
+            {message.isUser ? <Text style={styles.messageText}>{message.content as string}</Text> : renderFormattedContent(message.content as FormattedContent[])}
           </View>
         ))}
         {isTyping && <TypingIndicator />}
       </ScrollView>
       <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          value={input}
-          onChangeText={setInput}
-          placeholder="Ask a legal question..."
-          placeholderTextColor="#999"
-          editable={!isLoading}
-        />
+        <TextInput style={styles.input} value={input} onChangeText={setInput} placeholder="Ask a legal question..." placeholderTextColor="#999" editable={!isLoading} />
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={isLoading}>
-          <Animated.View style={hammerAnimatedStyles}>
-            <Text style={styles.iconText}>⚖️</Text>
-          </Animated.View>
+          <Animated.View style={hammerAnimatedStyles}><Text style={styles.iconText}>⚖️</Text></Animated.View>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
