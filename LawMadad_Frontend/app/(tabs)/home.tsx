@@ -238,6 +238,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2c2c2c",
     padding: 30,
     zIndex: 1000,
+    paddingTop: Platform.OS === "ios" ? 40 : StatusBar.currentHeight || 20, // Adjust for notch
   },
   closeButton: {
     alignSelf: "flex-end",
