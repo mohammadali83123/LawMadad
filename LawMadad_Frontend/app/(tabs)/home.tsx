@@ -10,8 +10,9 @@ import {
   ScrollView,
   SafeAreaView,
   Alert,
+  StatusBar,
+  Platform,
 } from "react-native"
-import { StatusBar } from "react-native"
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -174,8 +175,12 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
+
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={toggleSidebar}><Text style={styles.iconText}>☰</Text></TouchableOpacity>
+        <TouchableOpacity onPress={toggleSidebar} style={styles.menuButton}>
+          <Text style={styles.iconText}>☰</Text>
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Legal Assistant</Text>
       </View>
       <Animated.View style={[styles.sidebar, sidebarAnimatedStyles]}>
@@ -209,15 +214,20 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     padding: 10,
-    marginTop: 30,
     backgroundColor: "#2c2c2c",
+    position: "relative",
+  },
+  menuButton: {
+    position: "absolute",
+    left: 10,
   },
   headerTitle: {
     color: "white",
     fontSize: 20,
     fontWeight: "bold",
-    marginLeft: 16,
+    textAlign: "center",
   },
   sidebar: {
     position: "absolute",
@@ -226,7 +236,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 300,
     backgroundColor: "#2c2c2c",
-    padding: 20,
+    padding: 30,
     zIndex: 1000,
   },
   closeButton: {
@@ -256,7 +266,7 @@ const styles = StyleSheet.create({
     maxWidth: "80%",
     padding: 12,
     borderRadius: 16,
-    marginBottom: 12,
+    marginBottom: 25,
   },
   userMessage: {
     alignSelf: "flex-end",
@@ -289,7 +299,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: "row",
-    padding: 10,
+    padding: 8,
     backgroundColor: "#2c2c2c",
   },
   input: {
@@ -316,7 +326,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 16,
     backgroundColor: "#2d3748",
-    marginBottom: 12,
+    marginBottom: 25,
   },
   typingText: {
     color: "white",
