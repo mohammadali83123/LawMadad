@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   StyleSheet,
   View,
@@ -10,7 +10,6 @@ import {
   ScrollView,
   SafeAreaView,
   Alert,
-  ActivityIndicator,
 } from "react-native"
 import { StatusBar } from "react-native"
 import Animated, {
@@ -63,6 +62,7 @@ export default function App() {
   const [input, setInput] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
 
   const translateX = useSharedValue(-300)
   const hammerRotation = useSharedValue(0)
@@ -110,10 +110,11 @@ export default function App() {
     setMessages((prevMessages) => [...prevMessages, userMessage])
     setInput("")
     setIsLoading(true)
+    setIsTyping(true)
 
     try {
       console.log("Sending query:", input)
-      const response = await fetch("https://c234-39-34-144-75.ngrok-free.app/query", {
+      const response = await fetch("https://ali4568-lawmadad.hf.space/query/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -154,6 +155,7 @@ export default function App() {
       ])
     } finally {
       setIsLoading(false)
+      setIsTyping(false)
     }
   }
 
@@ -184,6 +186,26 @@ export default function App() {
           )
       }
     })
+  }
+
+  const TypingIndicator = () => {
+    const [dots, setDots] = useState("")
+
+    useEffect(() => {
+      if (isTyping) {
+        const interval = setInterval(() => {
+          setDots((prev) => (prev.length < 3 ? prev + "." : ""))
+        }, 500)
+
+        return () => clearInterval(interval)
+      }
+    }, [isTyping])
+
+    return (
+      <View style={styles.typingContainer}>
+        <Text style={styles.typingText}>Typing{dots}</Text>
+      </View>
+    )
   }
 
   return (
@@ -223,12 +245,7 @@ export default function App() {
             )}
           </View>
         ))}
-        {isLoading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#8b4513" />
-            <Text style={styles.loadingText}>Processing your request...</Text>
-          </View>
-        )}
+        {isTyping && <TypingIndicator />}
       </ScrollView>
       <View style={styles.inputContainer}>
         <TextInput
@@ -359,19 +376,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     overflow: "hidden",
   },
-  loadingContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
+  typingContainer: {
+    alignSelf: "flex-start",
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: "#2d3748",
+    marginBottom: 12,
   },
-  loadingText: {
+  typingText: {
     color: "white",
     fontSize: 16,
-    marginTop: 8,
   },
   iconText: {
     color: "white",
     fontSize: 24,
   },
 })
-
