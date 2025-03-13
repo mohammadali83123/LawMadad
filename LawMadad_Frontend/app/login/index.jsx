@@ -2,60 +2,23 @@ import { View, Text, Image } from 'react-native'
 import React from 'react'
 import Colors from './../../constants/Colors'
 import { Pressable } from 'react-native'
-import * as WebBrowser from 'expo-web-browser'
-import { useOAuth } from '@clerk/clerk-expo'
-import * as Linking from 'expo-linking'
-import { useCallback } from 'react';
-import { useUser } from '@clerk/clerk-expo';
+import { useRouter } from 'expo-router'
 
-export const useWarmUpBrowser = () => {
-  React.useEffect(() => {
-    // Warm up the android browser to improve UX
-    // https://docs.expo.dev/guides/authentication/#improving-user-experience
-    void WebBrowser.warmUpAsync()
-    return () => {
-      void WebBrowser.coolDownAsync()
-    }
-  }, [])
-}
 
-WebBrowser.maybeCompleteAuthSession()
 
-export default function LoginScreen() {
-  
-  useWarmUpBrowser()
+export default function Home() {
 
-  const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' })
-  const { user } = useUser(); // Fetch user details
-  
-  const onPress = useCallback(async () => {
-    try {
-      const { createdSessionId, signIn, signUp, setActive } = await startOAuthFlow({
-        redirectUrl: Linking.createURL('/(tabs)/home', { scheme: 'myapp' }),
-      })
+  const router = useRouter();
 
-      // If sign in was successful, set the active session
-      if (createdSessionId) {
-        await setActive({ session: createdSessionId });
-
-        console.log("User Info:", user);
-        console.log("Username:", user?.username || user?.firstName || user?.emailAddresses?.[0]?.emailAddress);
-      } else {
-        // Use signIn or signUp returned from startOAuthFlow
-        // for next steps, such as MFA
-      }
-    } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
-      console.error(JSON.stringify(err, null, 2))
-    }
-  }, [])
+  const onPress = () => {
+    router.push('/login/loginScreen');
+  }
 
   return (
     <View style={{
       backgroundColor: Colors.WHITE,
-      height:'100%'
-      
+      height: '100%'
+
     }}>
       <Image style={{ width: '100%', height: 400 }} source={require("./../../assets/images/logo.png")} />
       <View style={{

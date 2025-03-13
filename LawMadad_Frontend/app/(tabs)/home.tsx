@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   StyleSheet,
   View,
@@ -10,9 +10,9 @@ import {
   ScrollView,
   SafeAreaView,
   Alert,
-  ActivityIndicator,
+  StatusBar,
+  Platform,
 } from "react-native"
-import { StatusBar } from "react-native"
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -28,25 +28,17 @@ type FormattedContent = {
 }
 
 const formatResponse = (text: string): FormattedContent[] => {
-  // Split the text into paragraphs
   const paragraphs = text.split("\n\n")
-
-  // Process each paragraph
   return paragraphs.map((paragraph): FormattedContent => {
-    // Check if the paragraph is a header (starts with **, is in all caps, or starts with ###)
     if (paragraph.startsWith("**") && paragraph.endsWith("**")) {
       return { type: "header", content: paragraph.replace(/\*\*/g, "") }
     } else if (paragraph === paragraph.toUpperCase() && paragraph.length > 3) {
       return { type: "header", content: paragraph }
     } else if (paragraph.startsWith("### ")) {
       return { type: "header", content: paragraph.replace(/^### /, "").replace(/\*\*/g, "") }
-    }
-    // Check if the paragraph is a list item
-    else if (paragraph.startsWith("* ")) {
+    } else if (paragraph.startsWith("* ")) {
       return { type: "listItem", content: paragraph.substring(2) }
-    }
-    // Regular paragraph
-    else {
+    } else {
       return { type: "paragraph", content: paragraph }
     }
   })
@@ -63,14 +55,21 @@ export default function App() {
   const [input, setInput] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
+
+  const scrollViewRef = useRef<ScrollView | null>(null)
+
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true })
+    }
+  }, [messages])
 
   const translateX = useSharedValue(-300)
   const hammerRotation = useSharedValue(0)
 
   const sidebarAnimatedStyles = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: translateX.value }],
-    }
+    return { transform: [{ translateX: translateX.value }] }
   })
 
   const hammerAnimatedStyles = useAnimatedStyle(() => {
@@ -105,33 +104,23 @@ export default function App() {
       isUser: true,
     }
 
-    console.log("UserMessage:", JSON.stringify(userMessage))
-
     setMessages((prevMessages) => [...prevMessages, userMessage])
     setInput("")
     setIsLoading(true)
+    setIsTyping(true)
 
     try {
-      console.log("Sending query:", input)
-      const response = await fetch("https://c234-39-34-144-75.ngrok-free.app/query", {
+      const response = await fetch("https://ali4568-lawmadad.hf.space/query/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: input }),
       })
 
-      console.log("Response status:", response.status)
-
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error("Error response:", errorText)
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
-      console.log("API response:", JSON.stringify(data))
-
       const formattedResponse = formatResponse(data.response)
 
       const apiMessage: Message = {
@@ -142,18 +131,14 @@ export default function App() {
 
       setMessages((prevMessages) => [...prevMessages, apiMessage])
     } catch (error) {
-      console.error("Error fetching response:", error)
       showAlert("Error", "There was an error processing your request. Please try again.")
       setMessages((prevMessages) => [
         ...prevMessages,
-        {
-          id: messages.length + 1,
-          content: "Sorry, there was an error processing your request.",
-          isUser: false,
-        },
+        { id: messages.length + 1, content: "Sorry, there was an error.", isUser: false },
       ])
     } finally {
       setIsLoading(false)
+      setIsTyping(false)
     }
   }
 
@@ -165,84 +150,56 @@ export default function App() {
     return content.map((item, index) => {
       switch (item.type) {
         case "header":
-          return (
-            <Text key={index} style={styles.headerText}>
-              {item.content}
-            </Text>
-          )
+          return <Text key={index} style={styles.headerText}>{item.content}</Text>
         case "listItem":
-          return (
-            <Text key={index} style={styles.listItemText}>
-              • {item.content}
-            </Text>
-          )
+          return <Text key={index} style={styles.listItemText}>• {item.content}</Text>
         case "paragraph":
-          return (
-            <Text key={index} style={styles.paragraphText}>
-              {item.content}
-            </Text>
-          )
+          return <Text key={index} style={styles.paragraphText}>{item.content}</Text>
       }
     })
+  }
+
+  const TypingIndicator = () => {
+    const [dots, setDots] = useState("")
+    useEffect(() => {
+      if (isTyping) {
+        const interval = setInterval(() => {
+          setDots((prev) => (prev.length < 3 ? prev + "." : ""))
+        }, 500)
+        return () => clearInterval(interval)
+      }
+    }, [isTyping])
+    return <View style={styles.typingContainer}><Text style={styles.typingText}>Typing{dots}</Text></View>
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
+
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={toggleSidebar}>
+        <TouchableOpacity onPress={toggleSidebar} style={styles.menuButton}>
           <Text style={styles.iconText}>☰</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Legal Assistant</Text>
       </View>
       <Animated.View style={[styles.sidebar, sidebarAnimatedStyles]}>
-        <TouchableOpacity style={styles.closeButton} onPress={toggleSidebar}>
-          <Text style={styles.iconText}>✕</Text>
-        </TouchableOpacity>
+        <TouchableOpacity style={styles.closeButton} onPress={toggleSidebar}><Text style={styles.iconText}>✕</Text></TouchableOpacity>
         <Text style={styles.sidebarTitle}>Menu</Text>
-        <TouchableOpacity style={styles.sidebarItem}>
-          <Text style={styles.sidebarItemText}>New Consultation</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.sidebarItem}>
-          <Text style={styles.sidebarItemText}>Case History</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.sidebarItem}>
-          <Text style={styles.sidebarItemText}>Legal Resources</Text>
-        </TouchableOpacity>
       </Animated.View>
-      <ScrollView style={styles.chatContainer}>
+      <ScrollView ref={scrollViewRef} style={styles.chatContainer}
+        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}>
         {messages.map((message) => (
-          <View
-            key={message.id}
-            style={[styles.messageContainer, message.isUser ? styles.userMessage : styles.apiMessage]}
-          >
-            {message.isUser ? (
-              <Text style={styles.messageText}>{message.content as string}</Text>
-            ) : (
-              renderFormattedContent(message.content as FormattedContent[])
-            )}
+          <View key={message.id} style={[styles.messageContainer, message.isUser ? styles.userMessage : styles.apiMessage]}>
+            {message.isUser ? <Text style={styles.messageText}>{message.content as string}</Text> : renderFormattedContent(message.content as FormattedContent[])}
           </View>
         ))}
-        {isLoading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#8b4513" />
-            <Text style={styles.loadingText}>Processing your request...</Text>
-          </View>
-        )}
+        {isTyping && <TypingIndicator />}
       </ScrollView>
       <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          value={input}
-          onChangeText={setInput}
-          placeholder="Ask a legal question..."
-          placeholderTextColor="#999"
-          editable={!isLoading}
-        />
+        <TextInput style={styles.input} value={input} onChangeText={setInput} placeholder="Ask a legal question..." placeholderTextColor="#999" editable={!isLoading} />
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={isLoading}>
-          <Animated.View style={hammerAnimatedStyles}>
-            <Text style={styles.iconText}>⚖️</Text>
-          </Animated.View>
+          <Animated.View style={hammerAnimatedStyles}><Text style={styles.iconText}>⚖️</Text></Animated.View>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -257,15 +214,20 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     padding: 10,
-    marginTop: 30,
     backgroundColor: "#2c2c2c",
+    position: "relative",
+  },
+  menuButton: {
+    position: "absolute",
+    left: 10,
   },
   headerTitle: {
     color: "white",
     fontSize: 20,
     fontWeight: "bold",
-    marginLeft: 16,
+    textAlign: "center",
   },
   sidebar: {
     position: "absolute",
@@ -274,8 +236,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 300,
     backgroundColor: "#2c2c2c",
-    padding: 20,
+    padding: 30,
     zIndex: 1000,
+    paddingTop: Platform.OS === "ios" ? 40 : StatusBar.currentHeight || 20, // Adjust for notch
   },
   closeButton: {
     alignSelf: "flex-end",
@@ -304,7 +267,7 @@ const styles = StyleSheet.create({
     maxWidth: "80%",
     padding: 12,
     borderRadius: 16,
-    marginBottom: 12,
+    marginBottom: 25,
   },
   userMessage: {
     alignSelf: "flex-end",
@@ -337,7 +300,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: "row",
-    padding: 10,
+    padding: 8,
     backgroundColor: "#2c2c2c",
   },
   input: {
@@ -359,19 +322,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     overflow: "hidden",
   },
-  loadingContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
+  typingContainer: {
+    alignSelf: "flex-start",
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: "#2d3748",
+    marginBottom: 25,
   },
-  loadingText: {
+  typingText: {
     color: "white",
     fontSize: 16,
-    marginTop: 8,
   },
   iconText: {
     color: "white",
     fontSize: 24,
   },
 })
-
