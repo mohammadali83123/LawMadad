@@ -15,23 +15,15 @@ import {
   Alert,
 } from "react-native";
 import {useRouter} from 'expo-router';
-import { signInWithEmail , signUpWithEmail, sendOTP, verifyOTP } from "../../services/AuthService";
+import { signInWithEmail , signUpWithEmail } from "../../services/AuthService";
 
 const LoginScreen = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState("");
-  const [verificationId, setVerificationId] = useState(null);
   const [isSignUp, setIsSignUp] = useState(false);
-  const [activeTab, setActiveTab] = useState("email"); // "email" or "phone"
 
   const router = useRouter();
-
-
-  const handleGoogleSignIn = async () => {
-  };
-
 
   const handleAuth = async () => {
     try {
@@ -55,12 +47,8 @@ const LoginScreen = () => {
     }
   };
 
-  const handleSendOTP = async () => {
-    await sendOTP(phoneNumber, setVerificationId);
-  };
-
-  const handleVerifyOTP = async () => {
-    await verifyOTP(verificationId, otp);
+  const handleGoogleSignIn = async () => {
+    console.log("Google Sign In");
   };
 
   return (
@@ -74,24 +62,20 @@ const LoginScreen = () => {
               {isSignUp ? "Sign up to get started with our app" : "Sign in to continue to your account"}
             </Text>
           </View>
-
-          <View style={styles.tabContainer}>
-            <TouchableOpacity
-              style={[styles.tab, activeTab === "email" && styles.activeTab]}
-              onPress={() => setActiveTab("email")}
-            >
-              <Text style={[styles.tabText, activeTab === "email" && styles.activeTabText]}>Email</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.tab, activeTab === "phone" && styles.activeTab]}
-              onPress={() => setActiveTab("phone")}
-            >
-              <Text style={[styles.tabText, activeTab === "phone" && styles.activeTabText]}>Phone</Text>
-            </TouchableOpacity>
-          </View>
-
-          {activeTab === "email" ? (
             <View style={styles.formContainer}>
+              {isSignUp && (
+                <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Name</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your name"
+                  value={name}
+                  onChangeText={setName}
+                  keyboardType="default"
+                  autoCapitalize="none"
+                />
+              </View>
+              )}
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Email</Text>
                 <TextInput
@@ -138,45 +122,7 @@ const LoginScreen = () => {
                 <Image source={{ uri: "https://placeholder.svg?height=24&width=24" }} style={styles.socialIcon} />
                 <Text style={styles.socialButtonText}>Continue with Google</Text>
               </TouchableOpacity>
-
             </View>
-          ) : (
-            <View style={styles.formContainer}>
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Phone Number</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your phone number"
-                  value={phoneNumber}
-                  onChangeText={setPhoneNumber}
-                  keyboardType="phone-pad"
-                />
-              </View>
-
-              <TouchableOpacity style={styles.primaryButton} onPress={handleSendOTP}>
-                <Text style={styles.primaryButtonText}>Send OTP</Text>
-              </TouchableOpacity>
-
-              {verificationId && (
-                <>
-                  <View style={styles.inputContainer}>
-                    <Text style={styles.inputLabel}>OTP Code</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Enter OTP code"
-                      value={otp}
-                      onChangeText={setOtp}
-                      keyboardType="number-pad"
-                    />
-                  </View>
-
-                  <TouchableOpacity style={styles.primaryButton} onPress={handleVerifyOTP}>
-                    <Text style={styles.primaryButtonText}>Verify OTP</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
-          )}
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>{isSignUp ? "Already have an account? " : "Don't have an account? "}</Text>

@@ -43,36 +43,3 @@ export const signInWithEmail = async (email, password) => {
     
   }
 };
-
-
-// Logout
-export const logout = async () => {
-  try {
-    await signOut(auth);
-  } catch (error) {
-    console.error("Logout error:", error.message);
-  }
-};
-
-
-// Phone Authentication (Corrected)
-export const sendOTP = async (phoneNumber, setVerificationId) => {
-  try {
-    const provider = new PhoneAuthProvider(auth);
-    const verificationId = await provider.verifyPhoneNumber(phoneNumber, auth);
-    setVerificationId(verificationId);
-  } catch (error) {
-    console.error("Error sending OTP:", error.message);
-    throw error;
-  }
-};
-
-export const verifyOTP = async (verificationId, otp) => {
-  try {
-    const credential = PhoneAuthProvider.credential(verificationId, otp);
-    return signInWithCredential(auth, credential);
-  } catch (error) {
-    console.error("Error verifying OTP:", error.message);
-    throw error;
-  }
-};
