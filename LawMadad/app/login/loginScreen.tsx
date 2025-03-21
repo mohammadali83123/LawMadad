@@ -14,45 +14,89 @@ import {
   Image,
   Alert,
 } from "react-native";
-import {useRouter} from 'expo-router';
-import { signInWithEmail , signUpWithEmail } from "../../services/AuthService";
+import { useRouter } from 'expo-router';
+import { signInWithEmail, signUpWithEmail, handleGoogleSignIn } from "../../services/AuthService";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const LoginScreen = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
 
   const handleAuth = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please enter both email and password");
+      return;
+    }
+    
+    setIsSubmitting(true);
     try {
       if (isSignUp) {
+        if (!name) {
+          Alert.alert("Error", "Please enter your name");
+          setIsSubmitting(false);
+          return;
+        }
+        
         await signUpWithEmail(email, password);
         Alert.alert("Verify Email", "Check your mailbox for a verification email");
       } else {
-        const user = await signInWithEmail(email,password);
+        const user = await signInWithEmail(email, password);
         
-        if(user){
+        if (user) {
           Alert.alert("Login Successful", `Welcome back, ${user.email}`);
-          console.log("Login Successful:", user);
           router.replace('/(tabs)/home');
-        }
-        else{
+        } else {
           Alert.alert("Login Failed", "Invalid email or password, \nTry again");
         }
       }
     } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert("Error", error.message);
+      } else {
+        Alert.alert("Error", "An unknown error occurred");
+      }
       console.error("Authentication error:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    console.log("Google Sign In");
+  const handleGoogleSignInPress = async () => {
+    setIsSubmitting(true);
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      console.log("Google Sign In response", response);
+      
+      if (response && response?.data?.idToken) {
+        const user = await handleGoogleSignIn(response?.data?.idToken);
+        Alert.alert("Google Sign In Successful", `Welcome ${user.displayName || user.email}!`);
+        router.replace('/(tabs)/home');
+      } else {
+        Alert.alert("Google Sign In Failed", "Please try again");
+      }
+    } catch (error) {
+      console.error("Google Sign In Error:", error);
+      if (error instanceof Error) {
+        Alert.alert("Google Sign In Error", error.message);
+      } else {
+        Alert.alert("Google Sign In Error", "An unknown error occurred");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
+  // Rest of your component code remains the same...
+  
   return (
     <SafeAreaView style={styles.container}>
+      {/* Keep your existing UI code */}
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardAvoidingView}>
         <ScrollView contentContainerStyle={styles.scrollView}>
           <View style={styles.header}>
@@ -62,9 +106,9 @@ const LoginScreen = () => {
               {isSignUp ? "Sign up to get started with our app" : "Sign in to continue to your account"}
             </Text>
           </View>
-            <View style={styles.formContainer}>
-              {isSignUp && (
-                <View style={styles.inputContainer}>
+          <View style={styles.formContainer}>
+            {isSignUp && (
+              <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Name</Text>
                 <TextInput
                   style={styles.input}
@@ -73,68 +117,79 @@ const LoginScreen = () => {
                   onChangeText={setName}
                   keyboardType="default"
                   autoCapitalize="none"
+                  editable={!isSubmitting}
                 />
               </View>
-              )}
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Email</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your email"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Password</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                />
-              </View>
-
-              {!isSignUp && (
-                <TouchableOpacity style={styles.forgotPassword}>
-                  <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-                </TouchableOpacity>
-              )}
-
-              <TouchableOpacity style={styles.primaryButton} onPress={handleAuth}>
-                <Text style={styles.primaryButtonText}>{isSignUp ? "Sign Up" : "Login"}</Text>
-              </TouchableOpacity>
-
-              <View style={styles.dividerContainer}>
-                <View style={styles.divider} />
-                <Text style={styles.dividerText}>OR</Text>
-                <View style={styles.divider} />
-              </View>
-
-              <TouchableOpacity
-                style={styles.socialButton}
-                onPress={handleGoogleSignIn}
-              >
-                <Image source={{ uri: "https://placeholder.svg?height=24&width=24" }} style={styles.socialIcon} />
-                <Text style={styles.socialButtonText}>Continue with Google</Text>
-              </TouchableOpacity>
+            )}
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                editable={!isSubmitting}
+              />
             </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                editable={!isSubmitting}
+              />
+            </View>
+
+            {!isSignUp && (
+              <TouchableOpacity style={styles.forgotPassword}>
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity 
+              style={[styles.primaryButton, isSubmitting && styles.disabledButton]} 
+              onPress={handleAuth}
+              disabled={isSubmitting}
+            >
+              <Text style={styles.primaryButtonText}>
+                {isSubmitting ? "Please wait..." : isSignUp ? "Sign Up" : "Login"}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.dividerContainer}>
+              <View style={styles.divider} />
+              <Text style={styles.dividerText}>OR</Text>
+              <View style={styles.divider} />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.socialButton, isSubmitting && styles.disabledButton]}
+              onPress={handleGoogleSignInPress}
+              disabled={isSubmitting}
+            >
+              <Image source={{ uri: "https://placeholder.svg?height=24&width=24" }} style={styles.socialIcon} />
+              <Text style={styles.socialButtonText}>Continue with Google</Text>
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>{isSignUp ? "Already have an account? " : "Don't have an account? "}</Text>
-            <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
+            <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)} disabled={isSubmitting}>
               <Text style={styles.footerLink}>{isSignUp ? "Login" : "Sign Up"}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  )
-}
+  );
+};
+
 
 const styles = StyleSheet.create({
   container: {
@@ -147,6 +202,9 @@ const styles = StyleSheet.create({
   scrollView: {
     flexGrow: 1,
     padding: 20,
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   header: {
     alignItems: "center",
