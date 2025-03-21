@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mohammadali83123.LawMadad"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,6 +25,12 @@
       "favicon": "./assets/images/logo.png"
     },
     "plugins": [
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.562895718428-rhvf0semjgdqgkb4fgnc01d89366394a"
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
