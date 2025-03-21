@@ -8,8 +8,8 @@ import AuthGuard from "../components/AuthGuard";
 export default function RootLayout() {
   useEffect(() => {
     GoogleSignin.configure({
-      iosClientId: '562895718428-rhvf0semjgdqgkb4fgnc01d89366394a.apps.googleusercontent.com',
-      webClientId: '562895718428-t84d71cputorjgl6andabcsp22i2pf52.apps.googleusercontent.com',
+      iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
+      webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
       profileImageSize: 150,
     });
   }, []);
