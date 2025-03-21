@@ -16,12 +16,14 @@ import {
 } from "react-native";
 import {useRouter} from 'expo-router';
 import { signInWithEmail , signUpWithEmail } from "../../services/AuthService";
+import { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } from "@react-native-google-signin/google-signin";
 
 const LoginScreen = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
 
@@ -49,6 +51,29 @@ const LoginScreen = () => {
 
   const handleGoogleSignIn = async () => {
     console.log("Google Sign In");
+    try{
+      setIsSubmitting(true); 
+      await GoogleSignin.hasPlayServices();
+      console.log("Google Sign In hasPlayServices");
+      const response = await GoogleSignin.signIn();
+      console.log("Google Sign In response", response);
+      setIsSubmitting(false);
+      if(isSuccessResponse(response)){
+        
+        const {idToken, user} = response.data;
+        const {name, email, photo} = user;
+        Alert.alert("Google Sign In Successful", `Welcome ${name}!`);
+        router.replace('/(tabs)/home');
+        console.log("Google Sign In Successful:", user);
+      }
+      else{
+        Alert.alert("Google Sign In Failed", "Please try again");
+        console.log("Google Sign In Failed:", response);
+      }
+    }catch(error){
+      console.log("Google Sign In Error:", error);
+      throw error;
+    }
   };
 
   return (
@@ -118,6 +143,7 @@ const LoginScreen = () => {
               <TouchableOpacity
                 style={styles.socialButton}
                 onPress={handleGoogleSignIn}
+                disabled={isSubmitting}
               >
                 <Image source={{ uri: "https://placeholder.svg?height=24&width=24" }} style={styles.socialIcon} />
                 <Text style={styles.socialButtonText}>Continue with Google</Text>
