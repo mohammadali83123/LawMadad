@@ -51,6 +51,7 @@ export default function Home() {
   const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
+  const [isQuerySelecting, setIsQuerySelecting] = useState(false);
 
   const scrollViewRef = useRef(null)
 
@@ -175,6 +176,64 @@ export default function Home() {
     Alert.alert(title, message)
   }
 
+  const handleQuerySelect = (queryItem) => {
+    if (isQuerySelecting) return;
+    setIsQuerySelecting(true);
+  
+  
+    // Convert the response to a string robustly.
+    let responseText = "";
+    if (typeof queryItem.response === "string") {
+      responseText = queryItem.response;
+    } else if (Array.isArray(queryItem.response)) {
+      responseText = queryItem.response.join("\n\n");
+    } else if (queryItem.response) {
+      responseText = String(queryItem.response);
+    }
+  
+    if (!responseText.trim()) {
+      Alert.alert("No Response", "This query has no response available.");
+      setIsQuerySelecting(false);
+      return;
+    }
+  
+    // Format the response.
+    let formattedResponse = formatResponse(responseText);
+    // Fallback: if formattedResponse is empty, just wrap the raw text in a paragraph.
+    if (!formattedResponse || formattedResponse.length === 0) {
+      formattedResponse = [{ type: "paragraph", content: responseText }];
+    }
+  
+    // Generate unique IDs using timestamp.
+    const timestamp = Date.now();
+    const newChat = [
+      {
+        id: timestamp,
+        content: queryItem.user_query,
+        isUser: true,
+      },
+      {
+        id: timestamp + 1,
+        content: formattedResponse,
+        isUser: false,
+      }
+    ];
+  
+    setMessages(newChat);
+  
+    // Delay closing the sidebar slightly.
+    setTimeout(() => {
+      toggleSidebar();
+      setIsQuerySelecting(false);
+    }, 300);
+  };
+    
+  
+  
+  
+  
+  
+
   const renderFormattedContent = (content) => {
     return content.map((item, index) => {
       switch (item.type) {
@@ -223,7 +282,7 @@ export default function Home() {
       </View>
 
       {/* Sidebar Component */}
-      <Sidebar toggleSidebar={toggleSidebar} animatedStyle={sidebarAnimatedStyles} />
+      <Sidebar toggleSidebar={toggleSidebar} animatedStyle={sidebarAnimatedStyles} onQuerySelect={handleQuerySelect} />
 
       <ScrollView
         ref={scrollViewRef}
