@@ -105,15 +105,21 @@ const LoginScreen = () => {
   const handleGoogleSignInPress = async () => {
     setIsSubmitting(true);
     try {
+      // Force a new account selection by signing out of any cached session.
+      await GoogleSignin.signOut();
+      // Optionally, you could also revoke access:
+      // await GoogleSignin.revokeAccess();
+  
+      // Check for play services and initiate the sign-in flow.
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
       console.log("Google Sign In response", response);
-      
+  
       if (response && response?.data?.idToken) {
-        // Process Google sign-in (your function should return a user object)
-        const user = await handleGoogleSignIn(response?.data?.idToken);
+        // Process Google sign-in (handleGoogleSignIn should return a user object)
+        const user = await handleGoogleSignIn(response.data.idToken);
         if (user) {
-          // Store Google user data in Firestore (no password for Google sign-in)
+          // Store user data in Firestore (no password needed for Google sign-in)
           await storeUserData(user);
           Alert.alert("Google Sign In Successful", `Welcome ${user.displayName || user.email}!`);
           router.replace("/(tabs)/home");
@@ -125,15 +131,12 @@ const LoginScreen = () => {
       }
     } catch (error) {
       console.error("Google Sign In Error:", error);
-      if (error instanceof Error) {
-        Alert.alert("Google Sign In Error", error.message);
-      } else {
-        Alert.alert("Google Sign In Error", "An unknown error occurred");
-      }
+      Alert.alert("Google Sign In Error", error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
       setIsSubmitting(false);
     }
   };
+  
 
   // Rest of your component code remains the same...
   
