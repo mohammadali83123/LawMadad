@@ -5,6 +5,7 @@ import { TouchableOpacity, Text, StyleSheet, ScrollView, View, Platform, StatusB
 import Animated from "react-native-reanimated"
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore"
 import { firestore, auth } from "../../Config/FirebaseConfig"
+import Fontisto from '@expo/vector-icons/Fontisto';
 
 const Sidebar = ({ toggleSidebar, animatedStyle }) => {
   const [history, setHistory] = useState([])
@@ -33,7 +34,7 @@ const Sidebar = ({ toggleSidebar, animatedStyle }) => {
   return (
     <Animated.View style={[styles.sidebar, animatedStyle]}>
       <TouchableOpacity style={styles.closeButton} onPress={toggleSidebar}>
-        <Text style={styles.iconText}>✕</Text>
+        <Fontisto name="close-a" size={20} color="white" />
       </TouchableOpacity>
       <Text style={styles.sidebarTitle}>Menu</Text>
       <Text style={styles.historyTitle}>Your Query History</Text>
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 300,
     backgroundColor: "#2c2c2c",
-    padding: 30,
+    padding: 20,
     zIndex: 1000,
     paddingTop: Platform.OS === "ios" ? 40 : StatusBar.currentHeight || 20,
   },
