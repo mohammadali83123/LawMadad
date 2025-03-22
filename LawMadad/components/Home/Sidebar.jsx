@@ -5,9 +5,9 @@ import { TouchableOpacity, Text, StyleSheet, ScrollView, View, Platform, StatusB
 import Animated from "react-native-reanimated"
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore"
 import { firestore, auth } from "../../Config/FirebaseConfig"
-import Fontisto from '@expo/vector-icons/Fontisto';
+import Fontisto from '@expo/vector-icons/Fontisto'
 
-const Sidebar = ({ toggleSidebar, animatedStyle }) => {
+const Sidebar = ({ toggleSidebar, animatedStyle, onQuerySelect }) => {
   const [history, setHistory] = useState([])
 
   useEffect(() => {
@@ -43,12 +43,14 @@ const Sidebar = ({ toggleSidebar, animatedStyle }) => {
           <Text style={styles.noHistoryText}>No queries found.</Text>
         ) : (
           history.map((item) => (
-            <View key={item.id} style={styles.historyItem}>
-              <Text style={styles.historyQuery}>{item.user_query}</Text>
-              <Text style={styles.historyTimestamp}>
-                {new Date(item.timestamp).toLocaleString()}
-              </Text>
-            </View>
+            <TouchableOpacity key={item.id} onPress={() => onQuerySelect(item)}>
+              <View style={styles.historyItem}>
+                <Text style={styles.historyQuery}>{item.user_query}</Text>
+                <Text style={styles.historyTimestamp}>
+                  {new Date(item.timestamp).toLocaleString()}
+                </Text>
+              </View>
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>
