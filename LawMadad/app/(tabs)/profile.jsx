@@ -129,12 +129,12 @@ export default function Profile() {
                 source={{ uri: user?.photoURL }}
                 style={styles.profileImage}
               />
-              <TouchableOpacity 
+              {/* <TouchableOpacity 
                 style={styles.editProfileImageButton}
                 onPress={handleEditProfile}
               >
                 <Feather name="edit-2" size={16} color="white" />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
             
             {/* User info */}
@@ -201,7 +201,7 @@ export default function Profile() {
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Settings</Text>
           
-          <View style={styles.settingItem}>
+          {/* <View style={styles.settingItem}>
             <View style={styles.settingIconContainer}>
               <Ionicons name="moon" size={20} color="#4a6da7" />
             </View>
@@ -212,12 +212,13 @@ export default function Profile() {
               trackColor={{ false: "#e0e0e0", true: "#a7c1e0" }}
               thumbColor={darkMode ? "#4a6da7" : "#f4f4f4"}
               ios_backgroundColor="#e0e0e0"
+              android_ripple={{ color: "#4a6da7" }}
               onValueChange={() => toggleSwitch(setDarkMode)}
               value={darkMode}
             />
-          </View>
+          </View> */}
           
-          <View style={styles.settingItem}>
+          {/* <View style={styles.settingItem}>
             <View style={styles.settingIconContainer}>
               <Ionicons name="notifications" size={20} color="#4a6da7" />
             </View>
@@ -228,14 +229,15 @@ export default function Profile() {
               trackColor={{ false: "#e0e0e0", true: "#a7c1e0" }}
               thumbColor={notifications ? "#4a6da7" : "#f4f4f4"}
               ios_backgroundColor="#e0e0e0"
+              android_ripple={{ color: "#4a6da7" }}
               onValueChange={() => toggleSwitch(setNotifications)}
               value={notifications}
             />
-          </View>
+          </View> */}
           
           <TouchableOpacity 
             style={styles.settingItem} 
-            onPress={() => Alert.alert('Privacy', 'Privacy settings will be available in the next update!')}
+            onPress={() => router.push('/singlescreens/privacy')}
           >
             <View style={styles.settingIconContainer}>
               <Ionicons name="lock-closed" size={20} color="#4a6da7" />
@@ -248,7 +250,7 @@ export default function Profile() {
           
           <TouchableOpacity 
             style={styles.settingItem}
-            onPress={() => Alert.alert('Help', 'Help center will be available in the next update!')}
+            onPress={() => router.push('/singlescreens/helpCenter')}
           >
             <View style={styles.settingIconContainer}>
               <Ionicons name="help-circle" size={20} color="#4a6da7" />
