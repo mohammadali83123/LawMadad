@@ -17,6 +17,35 @@ import {
 import { useRouter } from 'expo-router';
 import { signInWithEmail, signUpWithEmail, handleGoogleSignIn } from "../../services/AuthService";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+// Firestore imports
+import { doc, setDoc } from "firebase/firestore";
+import { firestore } from "../../Config/FirebaseConfig";
+// Import bcryptjs for hashing the password
+const bcrypt = require('react-native-bcrypt');
+ // Use react-native-bcrypt
+
+const storeUserData = async (user: any, providedName?: string, rawPassword?: string) => {
+  if (!user.uid) return;
+  try {
+    // Hash the password if provided. For sign in or Google sign in, rawPassword will be undefined.
+    const hashedPassword = rawPassword ? bcrypt.hashSync(rawPassword, 10) : "";
+    await setDoc(
+      doc(firestore, "users", user.uid),
+      {
+        uid: user.uid,
+        email: user.email,
+        name: user.displayName || providedName || "",
+        // Store the hashed password if available; otherwise keep an empty string
+        password: hashedPassword,
+        lastLogin: new Date().toISOString(),
+      },
+      { merge: true }
+    );
+    console.log("User data stored in Firestore");
+  } catch (error) {
+    console.error("Error storing user data:", error);
+  }
+};
 
 const LoginScreen = () => {
   const [name, setName] = useState("");
@@ -42,14 +71,21 @@ const LoginScreen = () => {
           return;
         }
         
-        await signUpWithEmail(email, password);
+        // Create a new user with email and password
+        const newUser = await signUpWithEmail(email, password);
+        if (newUser) {
+          // Store user data including the hashed password
+          await storeUserData(newUser, name, password);
+        }
         Alert.alert("Verify Email", "Check your mailbox for a verification email");
       } else {
         const user = await signInWithEmail(email, password);
         
         if (user) {
+          // Update Firestore with last login. No password provided on login.
+          await storeUserData(user);
           Alert.alert("Login Successful", `Welcome back, ${user.email}`);
-          router.replace('/(tabs)/home');
+          router.replace("/(tabs)/home");
         } else {
           Alert.alert("Login Failed", "Invalid email or password, \nTry again");
         }
@@ -74,9 +110,16 @@ const LoginScreen = () => {
       console.log("Google Sign In response", response);
       
       if (response && response?.data?.idToken) {
+        // Process Google sign-in (your function should return a user object)
         const user = await handleGoogleSignIn(response?.data?.idToken);
-        Alert.alert("Google Sign In Successful", `Welcome ${user.displayName || user.email}!`);
-        router.replace('/(tabs)/home');
+        if (user) {
+          // Store Google user data in Firestore (no password for Google sign-in)
+          await storeUserData(user);
+          Alert.alert("Google Sign In Successful", `Welcome ${user.displayName || user.email}!`);
+          router.replace("/(tabs)/home");
+        } else {
+          Alert.alert("Google Sign In Failed", "Please try again");
+        }
       } else {
         Alert.alert("Google Sign In Failed", "Please try again");
       }
@@ -100,7 +143,6 @@ const LoginScreen = () => {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardAvoidingView}>
         <ScrollView contentContainerStyle={styles.scrollView}>
           <View style={styles.header}>
-            <Image source={{ uri: "https://placeholder.svg?height=80&width=80" }} style={styles.logo} />
             <Text style={styles.title}>{isSignUp ? "Create Account" : "Welcome Back"}</Text>
             <Text style={styles.subtitle}>
               {isSignUp ? "Sign up to get started with our app" : "Sign in to continue to your account"}
@@ -172,8 +214,8 @@ const LoginScreen = () => {
               style={[styles.socialButton, isSubmitting && styles.disabledButton]}
               onPress={handleGoogleSignInPress}
               disabled={isSubmitting}
-            >
-              <Image source={{ uri: "https://placeholder.svg?height=24&width=24" }} style={styles.socialIcon} />
+            > 
+              <Image source={{ uri: 'https://img.icons8.com/fluency/48/google-logo.png' }} style={styles.socialIcon} />
               <Text style={styles.socialButtonText}>Continue with Google</Text>
             </TouchableOpacity>
           </View>

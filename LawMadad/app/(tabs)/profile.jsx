@@ -155,22 +155,6 @@ export default function Profile() {
           </View>
         </LinearGradient>
 
-        {/* Profile Stats */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>0</Text>
-            <Text style={styles.statLabel}>Posts</Text>
-          </View>
-          <View style={[styles.statItem, styles.statBorder]}>
-            <Text style={styles.statValue}>0</Text>
-            <Text style={styles.statLabel}>Followers</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>0</Text>
-            <Text style={styles.statLabel}>Following</Text>
-          </View>
-        </View>
-
         {/* Account Information Section */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Account Information</Text>

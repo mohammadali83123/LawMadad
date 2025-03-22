@@ -21,15 +21,13 @@ import Animated, {
   Easing,
   withSpring,
 } from "react-native-reanimated"
+// Import Firestore methods and auth instance
+import { addDoc, collection } from "firebase/firestore"
+import { firestore, auth } from "../../Config/FirebaseConfig"
 
-type FormattedContent = {
-  type: "header" | "listItem" | "paragraph"
-  content: string
-}
-
-const formatResponse = (text: string): FormattedContent[] => {
+const formatResponse = (text) => {
   const paragraphs = text.split("\n\n")
-  return paragraphs.map((paragraph): FormattedContent => {
+  return paragraphs.map((paragraph) => {
     if (paragraph.startsWith("**") && paragraph.endsWith("**")) {
       return { type: "header", content: paragraph.replace(/\*\*/g, "") }
     } else if (paragraph === paragraph.toUpperCase() && paragraph.length > 3) {
@@ -44,20 +42,14 @@ const formatResponse = (text: string): FormattedContent[] => {
   })
 }
 
-type Message = {
-  id: number
-  content: string | FormattedContent[]
-  isUser: boolean
-}
-
-export default function App() {
+export default function Home() {
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState("")
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
 
-  const scrollViewRef = useRef<ScrollView | null>(null)
+  const scrollViewRef = useRef(null)
 
   useEffect(() => {
     if (scrollViewRef.current) {
@@ -74,13 +66,19 @@ export default function App() {
 
   const hammerAnimatedStyles = useAnimatedStyle(() => {
     return {
-      transform: [{ translateY: -24 }, { rotate: `${hammerRotation.value}deg` }, { translateY: 24 }],
+      transform: [
+        { translateY: -24 },
+        { rotate: `${hammerRotation.value}deg` },
+        { translateY: 24 }
+      ],
     }
   })
 
+  // Updated toggle function using a local variable.
   const toggleSidebar = () => {
-    setIsOpen(!isOpen)
-    translateX.value = withTiming(isOpen ? -300 : 0, {
+    const newIsOpen = !isOpen
+    setIsOpen(newIsOpen)
+    translateX.value = withTiming(newIsOpen ? 0 : -300, {
       duration: 300,
       easing: Easing.bezier(0.25, 0.1, 0.25, 1),
     })
@@ -89,8 +87,25 @@ export default function App() {
   const animateHammer = () => {
     hammerRotation.value = withSequence(
       withTiming(-45, { duration: 100 }),
-      withSpring(0, { damping: 3, stiffness: 200 }),
+      withSpring(0, { damping: 3, stiffness: 200 })
     )
+  }
+
+  // Helper to store query in Firestore
+  const storeQueryInFirestore = async (userQuery, responseText) => {
+    try {
+      // Use the current user's uid if available; otherwise store null
+      const userId = auth.currentUser ? auth.currentUser.uid : null
+      const docRef = await addDoc(collection(firestore, "Query"), {
+        userId: userId,
+        user_query: userQuery,
+        response: responseText,
+        timestamp: new Date().toISOString()
+      })
+      console.log("Query stored with ID:", docRef.id)
+    } catch (error) {
+      console.error("Error storing query:", error)
+    }
   }
 
   const handleSubmit = async () => {
@@ -98,9 +113,12 @@ export default function App() {
 
     animateHammer()
 
-    const userMessage: Message = {
+    // Save the current query text before clearing the input
+    const queryText = input
+
+    const userMessage = {
       id: messages.length,
-      content: input,
+      content: queryText,
       isUser: true,
     }
 
@@ -113,7 +131,7 @@ export default function App() {
       const response = await fetch("https://ali4568-lawmadad.hf.space/query/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: input }),
+        body: JSON.stringify({ query: queryText }),
       })
 
       if (!response.ok) {
@@ -123,13 +141,16 @@ export default function App() {
       const data = await response.json()
       const formattedResponse = formatResponse(data.response)
 
-      const apiMessage: Message = {
+      const apiMessage = {
         id: messages.length + 1,
         content: formattedResponse,
         isUser: false,
       }
 
       setMessages((prevMessages) => [...prevMessages, apiMessage])
+
+      // Store the query and response in Firestore.
+      await storeQueryInFirestore(queryText, data.response)
     } catch (error) {
       showAlert("Error", "There was an error processing your request. Please try again.")
       setMessages((prevMessages) => [
@@ -142,11 +163,11 @@ export default function App() {
     }
   }
 
-  const showAlert = (title: string, message: string) => {
+  const showAlert = (title, message) => {
     Alert.alert(title, message)
   }
 
-  const renderFormattedContent = (content: FormattedContent[]) => {
+  const renderFormattedContent = (content) => {
     return content.map((item, index) => {
       switch (item.type) {
         case "header":
@@ -155,6 +176,8 @@ export default function App() {
           return <Text key={index} style={styles.listItemText}>• {item.content}</Text>
         case "paragraph":
           return <Text key={index} style={styles.paragraphText}>{item.content}</Text>
+        default:
+          return null
       }
     })
   }
@@ -169,7 +192,11 @@ export default function App() {
         return () => clearInterval(interval)
       }
     }, [isTyping])
-    return <View style={styles.typingContainer}><Text style={styles.typingText}>Typing{dots}</Text></View>
+    return (
+      <View style={styles.typingContainer}>
+        <Text style={styles.typingText}>Typing{dots}</Text>
+      </View>
+    )
   }
 
   return (
@@ -184,22 +211,46 @@ export default function App() {
         <Text style={styles.headerTitle}>Legal Assistant</Text>
       </View>
       <Animated.View style={[styles.sidebar, sidebarAnimatedStyles]}>
-        <TouchableOpacity style={styles.closeButton} onPress={toggleSidebar}><Text style={styles.iconText}>✕</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.closeButton} onPress={toggleSidebar}>
+          <Text style={styles.iconText}>✕</Text>
+        </TouchableOpacity>
         <Text style={styles.sidebarTitle}>Menu</Text>
       </Animated.View>
-      <ScrollView ref={scrollViewRef} style={styles.chatContainer}
-        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}>
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.chatContainer}
+        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+      >
         {messages.map((message) => (
-          <View key={message.id} style={[styles.messageContainer, message.isUser ? styles.userMessage : styles.apiMessage]}>
-            {message.isUser ? <Text style={styles.messageText}>{message.content as string}</Text> : renderFormattedContent(message.content as FormattedContent[])}
+          <View
+            key={message.id}
+            style={[
+              styles.messageContainer,
+              message.isUser ? styles.userMessage : styles.apiMessage,
+            ]}
+          >
+            {message.isUser ? (
+              <Text style={styles.messageText}>{message.content}</Text>
+            ) : (
+              renderFormattedContent(message.content)
+            )}
           </View>
         ))}
         {isTyping && <TypingIndicator />}
       </ScrollView>
       <View style={styles.inputContainer}>
-        <TextInput style={styles.input} value={input} onChangeText={setInput} placeholder="Ask a legal question..." placeholderTextColor="#999" editable={!isLoading} />
+        <TextInput
+          style={styles.input}
+          value={input}
+          onChangeText={setInput}
+          placeholder="Ask a legal question..."
+          placeholderTextColor="#999"
+          editable={!isLoading}
+        />
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={isLoading}>
-          <Animated.View style={hammerAnimatedStyles}><Text style={styles.iconText}>⚖️</Text></Animated.View>
+          <Animated.View style={hammerAnimatedStyles}>
+            <Text style={styles.iconText}>⚖️</Text>
+          </Animated.View>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -238,7 +289,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2c2c2c",
     padding: 30,
     zIndex: 1000,
-    paddingTop: Platform.OS === "ios" ? 40 : StatusBar.currentHeight || 20, // Adjust for notch
+    paddingTop: Platform.OS === "ios" ? 40 : StatusBar.currentHeight || 20,
   },
   closeButton: {
     alignSelf: "flex-end",
@@ -249,15 +300,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
-  },
-  sidebarItem: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#444",
-  },
-  sidebarItemText: {
-    color: "white",
-    fontSize: 18,
   },
   chatContainer: {
     flex: 1,
