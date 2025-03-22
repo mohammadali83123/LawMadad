@@ -7,7 +7,7 @@ import Colors from '../../constants/Colors';
 
 export default function DocumentDraft() {
   return (
-    <View style={{ flex: 1, marginTop: 30, backgroundColor: Colors.LIGHT_GRAY }}>
+    <View style={{ flex: 1, backgroundColor: Colors.LIGHT_GRAY }}>
       
       {/* Header */}
       <View>
