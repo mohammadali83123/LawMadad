@@ -20,17 +20,19 @@ import { Stack } from "expo-router";
 
 export default function HelpCenterScreen() {
   const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // Set the user email from Firebase Auth if available.
+    // Fetch user email and name from Firebase Auth
     if (auth.currentUser) {
       setUserEmail(auth.currentUser.email);
+      setUserName(auth.currentUser.displayName || "User");
     }
   }, []);
 
-  const handleSubmit = async () => {
+  const handleSendEmail = async () => {
     if (!message.trim()) {
       Alert.alert("Empty Message", "Please enter your message.");
       return;
@@ -61,6 +63,12 @@ export default function HelpCenterScreen() {
           <Text style={styles.subtitle}>Contact Us</Text>
           
           <View style={styles.formContainer}>
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              style={[styles.input, styles.disabledInput]}
+              value={userName}
+              editable={false}
+            />
             <Text style={styles.label}>Email</Text>
             <TextInput
               style={[styles.input, styles.disabledInput]}
@@ -78,7 +86,7 @@ export default function HelpCenterScreen() {
             />
             <TouchableOpacity 
               style={styles.submitButton} 
-              onPress={handleSubmit} 
+              onPress={handleSendEmail} 
               disabled={submitting}
             >
               {submitting ? (
