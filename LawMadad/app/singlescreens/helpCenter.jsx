@@ -12,17 +12,19 @@ import {
   ActivityIndicator, 
   Alert 
 } from "react-native";
+import * as MailComposer from "expo-mail-composer";
 import { LinearGradient } from "expo-linear-gradient";
 import { auth } from "../../Config/FirebaseConfig";
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from "expo-haptics";
 import { Stack } from "expo-router";
 
-export default function HelpCenterScreen() {
+export default function HelpCenter() {
   const [userEmail, setUserEmail] = useState("");
   const [userName, setUserName] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isEmailSupported, setIsEmailSupported] = useState(false);
 
   useEffect(() => {
     // Fetch user email and name from Firebase Auth
@@ -30,6 +32,13 @@ export default function HelpCenterScreen() {
       setUserEmail(auth.currentUser.email);
       setUserName(auth.currentUser.displayName || "User");
     }
+
+    async function checkEmailSupport() {
+      const supported = await MailComposer.isSupportedAsync();
+      setIsEmailSupported(supported);
+    }
+
+    checkEmailSupport();
   }, []);
 
   const handleSendEmail = async () => {
@@ -40,6 +49,13 @@ export default function HelpCenterScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSubmitting(true);
     try {
+
+      MailComposer.composeAsync({
+        recipients: ["muhammadalishaikh664@gmail.com"],
+        subject: `**LawMadad**: Help Center Message from ${userName}`,
+        body: message,
+        isHtml: false,
+      });
       // Replace the following with your actual submission logic (e.g., saving to Firestore or calling an API)
       // For now, we simulate submission with a timeout:
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -92,7 +108,7 @@ export default function HelpCenterScreen() {
               {submitting ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.submitButtonText}>Send Message</Text>
+                isEmailSupported ? <Text style={styles.submitButtonText}>Send Message</Text> : <Text style={styles.submitButtonText}>Email not supported on this device</Text>
               )}
             </TouchableOpacity>
           </View>
