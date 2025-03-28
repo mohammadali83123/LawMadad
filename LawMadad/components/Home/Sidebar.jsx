@@ -34,7 +34,7 @@ const Sidebar = ({ toggleSidebar, animatedStyle, onQuerySelect }) => {
   return (
     <Animated.View style={[styles.sidebar, animatedStyle]}>
       <TouchableOpacity style={styles.closeButton} onPress={toggleSidebar}>
-        <Fontisto name="close-a" size={20} color="white" />
+        <Fontisto name="close-a" size={20} color="black" />
       </TouchableOpacity>
       <Text style={styles.sidebarTitle}>Menu</Text>
       <Text style={styles.historyTitle}>Your Query History</Text>
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     left: 0,
     bottom: 0,
     width: 300,
-    backgroundColor: "#2c2c2c",
+    backgroundColor: "#f9f9f9",
     padding: 20,
     zIndex: 1000,
     paddingTop: Platform.OS === "ios" ? 40 : StatusBar.currentHeight || 20,
@@ -75,17 +75,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sidebarTitle: {
-    color: "white",
+    color: "black",
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
   },
   iconText: {
-    color: "white",
+    color: "black",
     fontSize: 24,
   },
   historyTitle: {
-    color: "white",
+    color: "black",
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   noHistoryText: {
-    color: "white",
+    color: "black",
     fontSize: 16,
   },
   historyItem: {
@@ -104,12 +104,12 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   historyQuery: {
-    color: "white",
+    color: "black",
     fontSize: 16,
     marginBottom: 5,
   },
   historyTimestamp: {
-    color: "#ccc",
+    color: "grey",
     fontSize: 12,
   },
 })

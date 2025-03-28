@@ -1,8 +1,7 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs } from "firebase/firestore";
-import { db } from './../../Config/FirebaseConfig';
-import { FlatList } from 'react-native';
+import { firestore } from './../../Config/FirebaseConfig';
 
 export default function Category() {
   const [categoryList, setCategoryList] = useState([]);
@@ -13,76 +12,95 @@ export default function Category() {
   }, []);
 
   const getCategory = async () => {
-    const snapshot = await getDocs(collection(db, 'Category'));
-    const categories = [];
-    snapshot.forEach((doc) => {
-      categories.push(doc.data()); // Collecting all items
-    });
-    setCategoryList(categories); // Update state in one go
+    try {
+      const snapshot = await getDocs(collection(firestore, 'Category'));
+      console.log("Snapshot size:", snapshot.size);
+      const categories = [];
+      snapshot.forEach((doc) => {
+        console.log("Doc data:", doc.data());
+        categories.push(doc.data());
+      });
+      setCategoryList(categories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
   };
 
   return (
-    <View style={{ padding: 10 }}>
-      <FlatList
-        data={categoryList}
-        horizontal={true} // Ensures items are displayed horizontally in a row
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => setSelectedCategory(item.name)}>
-            <View
-              style={[
-                styles.itemContainer,
-                selectedCategory === item.name
-                  ? styles.selectedItem
-                  : styles.deselectedItem,
-              ]}
-            >
-              <Image
-                source={{ uri: item?.imageURL }}
-                style={styles.categoryImages}
-                onError={() => console.log('Image failed to load')}
-              />
-              <Text style={selectedCategory === item.name ? styles.selectedText : styles.deselectedText}>
-                {item?.name}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item, index) => index.toString()} // Ensure each item has a unique key
-      />
+    <View style={styles.container}>
+      {categoryList.length > 0 ? (
+        <FlatList
+          data={categoryList}
+          horizontal={true}
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => setSelectedCategory(item.name)}>
+              <View
+                style={[
+                  styles.itemContainer,
+                  selectedCategory === item.name
+                    ? styles.selectedItem
+                    : styles.deselectedItem,
+                ]}
+              >
+                <Image
+                  source={{ uri: item?.imageURL }}
+                  style={styles.categoryImages}
+                  onError={() => console.log('Image failed to load')}
+                />
+                <Text style={selectedCategory === item.name ? styles.selectedText : styles.deselectedText}>
+                  {item?.name}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item, index) => index.toString()}
+        />
+      ) : (
+        <Text style={styles.noDataText}>No categories available</Text>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    padding: 10,
+  },
   itemContainer: {
-    marginRight: 10, // Space between items
+    marginRight: 10,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 5,
     borderRadius: 10,
   },
   selectedItem: {
-    borderColor: '#4CAF50', // Green border for selected item
+    borderColor: '#4CAF50', // Green border for selected category
     borderWidth: 2,
-    backgroundColor: '#e0f7e1', // Light green background for selected item
+    backgroundColor: '#e0f7e1', // Light green background for selected category
   },
   deselectedItem: {
-    borderColor: '#ddd', // Default border color
+    borderColor: '#ddd',
     borderWidth: 2,
-    backgroundColor: 'transparent', // No background for deselected items
+    backgroundColor: 'transparent',
   },
   categoryImages: {
-    width: 100, // Adjust the width to your preference
-    height: 100, // Adjust the height to your preference
-    borderRadius: 10, // Add rounded corners
-    borderWidth: 2, // Add a border width
-    borderColor: '#ddd', // Border color
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#ddd',
   },
   selectedText: {
-    fontWeight: 'bold', // Bold text for selected category
-    color: '#4CAF50', // Green text color for selected category
+    fontWeight: 'bold',
+    color: '#4CAF50',
   },
   deselectedText: {
-    color: '#000', // Default black text color for deselected category
+    color: '#000',
+  },
+  noDataText: {
+    color: '#333',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
