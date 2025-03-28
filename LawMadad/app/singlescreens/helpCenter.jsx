@@ -34,7 +34,7 @@ export default function HelpCenter() {
     }
 
     async function checkEmailSupport() {
-      // const supported = await MailComposer.isSupportedAsync();
+      const supported = await MailComposer.isSupportedAsync();
       setIsEmailSupported(supported);
     }
 
