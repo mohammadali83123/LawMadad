@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  ActivityIndicator,
-  Alert,
-  Switch,
-  Platform
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Image, 
+  TouchableOpacity, 
+  ScrollView, 
+  SafeAreaView, 
+  ActivityIndicator, 
+  Alert, 
+  Platform 
 } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getUserSession, signOutUser } from "../../services/AuthService";
 import { auth } from '../../Config/FirebaseConfig';
@@ -23,8 +21,6 @@ import * as Haptics from 'expo-haptics';
 export default function Profile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  const [notifications, setNotifications] = useState(true);
   const router = useRouter();
 
   // Fetch user data when component mounts
@@ -32,8 +28,6 @@ export default function Profile() {
     const fetchUserData = async () => {
       try {
         const sessionUser = await getUserSession();
-        
-        // If we have a Firebase user, use that data
         const currentUser = auth.currentUser;
         if (currentUser) {
           setUser({
@@ -47,7 +41,6 @@ export default function Profile() {
             creationTime: currentUser.metadata?.creationTime
           });
         } else if (sessionUser) {
-          // Fallback to session data if Firebase user isn't available
           setUser({
             ...sessionUser,
             photoURL: sessionUser.photoURL || 'https://ui-avatars.com/api/?name=' + 
@@ -70,12 +63,9 @@ export default function Profile() {
       "Logout",
       "Are you sure you want to logout?",
       [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Logout",
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Logout", 
           onPress: async () => {
             setLoading(true);
             try {
@@ -94,14 +84,38 @@ export default function Profile() {
     );
   };
 
+  const handleDeleteAccount = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to permanently delete your account? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          onPress: async () => {
+            setLoading(true);
+            try {
+              // Delete account from Firebase Auth.
+              await auth.currentUser.delete();
+              // Navigate to signup (or login) screen after deletion.
+              router.replace('/login');
+            } catch (error) {
+              console.error("Delete account error:", error);
+              Alert.alert("Error", "Failed to delete account. You may need to reauthenticate and try again.");
+            } finally {
+              setLoading(false);
+            }
+          },
+          style: "destructive"
+        }
+      ]
+    );
+  };
+
   const handleEditProfile = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Alert.alert('Edit Profile', 'Profile editing will be available in the next update!');
-  };
-
-  const toggleSwitch = (setter) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setter(previousState => !previousState);
   };
 
   if (loading) {
@@ -115,7 +129,6 @@ export default function Profile() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header with background gradient */}
         <LinearGradient
           colors={['#4a6da7', '#8a9eb5']}
           start={{ x: 0, y: 0 }}
@@ -123,21 +136,12 @@ export default function Profile() {
           style={styles.headerBackground}
         >
           <View style={styles.headerContentContainer}>
-            {/* Profile picture section */}
             <View style={styles.profileImageContainer}>
               <Image
                 source={{ uri: user?.photoURL }}
                 style={styles.profileImage}
               />
-              {/* <TouchableOpacity 
-                style={styles.editProfileImageButton}
-                onPress={handleEditProfile}
-              >
-                <Feather name="edit-2" size={16} color="white" />
-              </TouchableOpacity> */}
             </View>
-            
-            {/* User info */}
             <View style={styles.userInfoContainer}>
               <Text style={styles.userName}>{user?.displayName}</Text>
               <Text style={styles.userEmail}>{user?.email}</Text>
@@ -155,10 +159,8 @@ export default function Profile() {
           </View>
         </LinearGradient>
 
-        {/* Account Information Section */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Account Information</Text>
-          
           <View style={styles.infoItem}>
             <View style={styles.infoIconContainer}>
               <Ionicons name="person" size={20} color="#4a6da7" />
@@ -168,7 +170,6 @@ export default function Profile() {
               <Text style={styles.infoValue}>{user?.displayName || 'Not set'}</Text>
             </View>
           </View>
-          
           <View style={styles.infoItem}>
             <View style={styles.infoIconContainer}>
               <Ionicons name="mail" size={20} color="#4a6da7" />
@@ -183,7 +184,6 @@ export default function Profile() {
               </View>
             )}
           </View>
-
           <View style={styles.infoItem}>
             <View style={styles.infoIconContainer}>
               <Ionicons name="calendar" size={20} color="#4a6da7" />
@@ -197,44 +197,8 @@ export default function Profile() {
           </View>
         </View>
 
-        {/* Settings Section */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Settings</Text>
-          
-          {/* <View style={styles.settingItem}>
-            <View style={styles.settingIconContainer}>
-              <Ionicons name="moon" size={20} color="#4a6da7" />
-            </View>
-            <View style={styles.settingContent}>
-              <Text style={styles.settingLabel}>Dark Mode</Text>
-            </View>
-            <Switch
-              trackColor={{ false: "#e0e0e0", true: "#a7c1e0" }}
-              thumbColor={darkMode ? "#4a6da7" : "#f4f4f4"}
-              ios_backgroundColor="#e0e0e0"
-              android_ripple={{ color: "#4a6da7" }}
-              onValueChange={() => toggleSwitch(setDarkMode)}
-              value={darkMode}
-            />
-          </View> */}
-          
-          {/* <View style={styles.settingItem}>
-            <View style={styles.settingIconContainer}>
-              <Ionicons name="notifications" size={20} color="#4a6da7" />
-            </View>
-            <View style={styles.settingContent}>
-              <Text style={styles.settingLabel}>Notifications</Text>
-            </View>
-            <Switch
-              trackColor={{ false: "#e0e0e0", true: "#a7c1e0" }}
-              thumbColor={notifications ? "#4a6da7" : "#f4f4f4"}
-              ios_backgroundColor="#e0e0e0"
-              android_ripple={{ color: "#4a6da7" }}
-              onValueChange={() => toggleSwitch(setNotifications)}
-              value={notifications}
-            />
-          </View> */}
-          
           <TouchableOpacity 
             style={styles.settingItem} 
             onPress={() => router.push('/singlescreens/privacy')}
@@ -247,7 +211,6 @@ export default function Profile() {
             </View>
             <Ionicons name="chevron-forward" size={20} color="#888" />
           </TouchableOpacity>
-          
           <TouchableOpacity 
             style={styles.settingItem}
             onPress={() => router.push('/singlescreens/helpCenter')}
@@ -262,13 +225,20 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
 
-        {/* Logout Button */}
         <TouchableOpacity 
           style={styles.logoutButton}
           onPress={handleLogout}
         >
           <Ionicons name="log-out-outline" size={20} color="#fff" />
           <Text style={styles.logoutButtonText}>Logout</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.deleteButton}
+          onPress={handleDeleteAccount}
+        >
+          <Ionicons name="trash-bin" size={20} color="#fff" />
+          <Text style={styles.deleteButtonText}>Delete Account</Text>
         </TouchableOpacity>
         
         <View style={styles.versionContainer}>
@@ -317,19 +287,6 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: 'white',
   },
-  editProfileImageButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#4a6da7',
-    borderRadius: 15,
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'white',
-  },
   userInfoContainer: {
     marginLeft: 20,
     flex: 1,
@@ -358,39 +315,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     marginLeft: 5,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: 'white',
-    borderRadius: 15,
-    marginHorizontal: 20,
-    marginTop: -15,
-    paddingVertical: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statBorder: {
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: '#f0f0f0',
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#4a6da7',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#888',
-    marginTop: 5,
   },
   sectionContainer: {
     backgroundColor: 'white',
@@ -489,6 +413,27 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 10,
   },
+  deleteButton: {
+    backgroundColor: '#d32f2f',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    padding: 15,
+    marginHorizontal: 20,
+    marginTop: 10,
+    shadowColor: '#d32f2f',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  deleteButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 10,
+  },
   versionContainer: {
     alignItems: 'center',
     marginVertical: 20,
@@ -496,5 +441,12 @@ const styles = StyleSheet.create({
   versionText: {
     color: '#999',
     fontSize: 12,
-  }
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+  },
 });
+
