@@ -12,11 +12,6 @@ LawMadad is a legal assistance application built using **Expo** and **React Nati
 - Role-based navigation after login.
 - **Document Draft Feature**: Users can create, edit, and save legal document drafts within the app.
 
-## Tech Stack
-- **Frontend:** React Native (Expo)
-- **Backend:** Node.js (with an API for handling legal queries)
-- **Deployment:** AWS EC2 for backend services
-
 ## Setup & Installation
 
 ### Prerequisites
@@ -42,18 +37,11 @@ Start the Expo development server:
 npx expo start
 ```
 
-## API Configuration
-The login API is located at:
-```
-http://localhost:3000/dev/loginUser
-```
-Ensure your backend is running before testing login functionality.
+##App Status
+LawMadad is currently published on the Google Play Store under Early Access as part of open testing. Users can try out the app and provide feedback to help us improve before the full release.
 
-## Deployment
-For backend deployment on AWS EC2:
-1. Enable **Instance Auto-Recovery** to ensure the server restarts automatically.
-2. Configure the backend to handle incoming queries.
-3. Update API endpoints in the frontend as needed.
+##Model Deployment
+The AI model powering LawMadad is deployed using Hugging Face Spaces, ensuring reliable and scalable performance for processing legal queries based on Pakistani law.
 
 ## Future Enhancements
 - Implement real-time chat with legal advisors.
