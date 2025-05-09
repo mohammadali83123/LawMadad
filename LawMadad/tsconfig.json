@@ -12,6 +12,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-, "app/login/loginScreen.tsx", "app/(tabs)/home.jsx"  ]
+    "expo-env.d.ts",
+    "app/login/loginScreen.tsx", "app/(tabs)/home.jsx"  ]
 }
