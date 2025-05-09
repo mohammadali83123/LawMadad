@@ -8,9 +8,10 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+// import { getDocumentAsync } from 'expo-document-picker';
+import * as MediaLibrary from 'expo-media-library';
 
 export default function Form() {
   const [formData, setFormData] = useState({
@@ -37,58 +38,98 @@ export default function Form() {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
-  import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import { Alert } from 'react-native';
-
-    const handleGenerateDocument = async () => {
-      try {
-        const response = await fetch('https://ali4568-lawmadad-documentdraft.hf.space/documentdraft/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to generate document');
-        }
-
-        const blob = await response.blob();
-
-        // Convert blob to base64
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          const base64Data = reader.result.split(',')[1];
-          const filename = `Affidavit_${formData.full_name.replace(/\s/g, '_')}.docx`;
-          const fileUri = FileSystem.documentDirectory + filename;
-
-          try {
-            // Save base64 string as file
-            await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-
-            console.log('File saved at:', fileUri);
-            if (await Sharing.isAvailableAsync()) {
-              await Sharing.shareAsync(fileUri);
-            } else {
-              Alert.alert('Success', `Document saved to:\n${fileUri}`);
-            }
-          } catch (saveError) {
-            console.error('Error saving file:', saveError);
-            Alert.alert('Error', 'Could not save document.');
+  const handleGenerateDocument = async () => {
+    try {
+      const response = await fetch('https://ali4568-lawmadad-documentdraft.hf.space/documentdraft/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+  
+      if (!response.ok) throw new Error('Failed to generate document');
+  
+      const blob = await response.blob();
+  
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Data = reader.result.split(',')[1];
+        const filename = `Affidavit_${formData.full_name.replace(/\s/g, '_')}.docx`;
+        const fileUri = FileSystem.documentDirectory + filename;
+  
+        try {
+          await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+  
+          const { status } = await MediaLibrary.requestPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'Media library permission is required.');
+            return;
           }
-        };
-
-        reader.readAsDataURL(blob);
-      } catch (error) {
-        console.error('Document generation failed:', error);
-        Alert.alert('Error', error.message);
-      }
-    };
+  
+          const asset = await MediaLibrary.createAssetAsync(fileUri);
+          await MediaLibrary.createAlbumAsync('Download', asset, false);
+  
+          Alert.alert('Success', 'Document saved to Downloads folder!');
+        } catch (saveError) {
+          console.error('Saving error:', saveError);
+          Alert.alert('Error', 'Failed to save document.');
+        }
+      };
+  
+      reader.readAsDataURL(blob);
+    } catch (error) {
+      console.error('Generation failed:', error);
+      Alert.alert('Error', error.message);
+    }
   };
+
+  // const handleGenerateDocument = async () => {
+  //   try {
+  //     const response = await fetch('https://ali4568-lawmadad-documentdraft.hf.space/documentdraft/', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify(formData),
+  //     });
+  
+  //     if (!response.ok) throw new Error('Failed to generate document');
+  
+  //     const blob = await response.blob();
+  
+  //     const reader = new FileReader();
+  //     reader.onloadend = async () => {
+  //       const base64Data = reader.result.split(',')[1];
+  
+  //       try {
+  //         // Use SAF to let the user pick where to save
+  //         const filename = `Affidavit_${formData.full_name.replace(/\s/g, '_')}.docx`;
+  
+  //         const permission = await getDocumentAsync({
+  //           type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  //           copyToCacheDirectory: false,
+  //         });
+  
+  //         if (permission.type === 'success') {
+  //           await FileSystem.writeAsStringAsync(permission.uri, base64Data, {
+  //             encoding: FileSystem.EncodingType.Base64,
+  //           });
+  
+  //           Alert.alert('Success', 'Document saved to Downloads folder or chosen location!');
+  //         } else {
+  //           Alert.alert('Cancelled', 'File save cancelled.');
+  //         }
+  //       } catch (saveError) {
+  //         console.error('Saving error:', saveError);
+  //         Alert.alert('Error', 'Failed to save document.');
+  //       }
+  //     };
+  
+  //     reader.readAsDataURL(blob);
+  //   } catch (error) {
+  //     console.error('Generation failed:', error);
+  //     Alert.alert('Error', error.message);
+  //   }
+  // };
 
   return (
     <ScrollView style={styles.container}>
@@ -144,6 +185,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 20,
+    marginBottom: 30,
   },
   buttonText: {
     color: '#fff',
