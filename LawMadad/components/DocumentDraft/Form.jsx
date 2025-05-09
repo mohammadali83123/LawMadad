@@ -1,83 +1,154 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Alert,
+} from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+// import { getDocumentAsync } from 'expo-document-picker';
+import * as MediaLibrary from 'expo-media-library';
 
 export default function Form() {
-  const [person1Name, setPerson1Name] = useState('');
-  const [person2Name, setPerson2Name] = useState('');
-  const [date, setDate] = useState('');
-  const [caseCategory, setCaseCategory] = useState('');
-  const [advocateName, setAdvocateName] = useState('');
-  const [prompt, setPrompt] = useState('');
+  const [formData, setFormData] = useState({
+    full_name: '',
+    father_name: '',
+    gender: '',
+    religion: '',
+    address: '',
+    city: '',
+    case_versus: '',
+    app_under_section: '',
+    court_name: '',
+    court_no: '',
+    court_type: '',
+    jurisdiction: '',
+    case_number: '',
+    date: '',
+    sections: '',
+    police_station: '',
+    purpose: '',
+  });
 
-  const handleGenerateDocument = () => {
-    // Implement document generation logic here
-    console.log('Generating document...');
-    alert("Document Draft feature is coming soon...")
+  const handleChange = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
   };
+
+  const handleGenerateDocument = async () => {
+    try {
+      const response = await fetch('https://ali4568-lawmadad-documentdraft.hf.space/documentdraft/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+  
+      if (!response.ok) throw new Error('Failed to generate document');
+  
+      const blob = await response.blob();
+  
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Data = reader.result.split(',')[1];
+        const filename = `Affidavit_${formData.full_name.replace(/\s/g, '_')}.docx`;
+        const fileUri = FileSystem.documentDirectory + filename;
+  
+        try {
+          await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+  
+          const { status } = await MediaLibrary.requestPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'Media library permission is required.');
+            return;
+          }
+  
+          const asset = await MediaLibrary.createAssetAsync(fileUri);
+          await MediaLibrary.createAlbumAsync('Download', asset, false);
+  
+          Alert.alert('Success', 'Document saved to Downloads folder!');
+        } catch (saveError) {
+          console.error('Saving error:', saveError);
+          Alert.alert('Error', 'Failed to save document.');
+        }
+      };
+  
+      reader.readAsDataURL(blob);
+    } catch (error) {
+      console.error('Generation failed:', error);
+      Alert.alert('Error', error.message);
+    }
+  };
+
+  // const handleGenerateDocument = async () => {
+  //   try {
+  //     const response = await fetch('https://ali4568-lawmadad-documentdraft.hf.space/documentdraft/', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify(formData),
+  //     });
+  
+  //     if (!response.ok) throw new Error('Failed to generate document');
+  
+  //     const blob = await response.blob();
+  
+  //     const reader = new FileReader();
+  //     reader.onloadend = async () => {
+  //       const base64Data = reader.result.split(',')[1];
+  
+  //       try {
+  //         // Use SAF to let the user pick where to save
+  //         const filename = `Affidavit_${formData.full_name.replace(/\s/g, '_')}.docx`;
+  
+  //         const permission = await getDocumentAsync({
+  //           type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  //           copyToCacheDirectory: false,
+  //         });
+  
+  //         if (permission.type === 'success') {
+  //           await FileSystem.writeAsStringAsync(permission.uri, base64Data, {
+  //             encoding: FileSystem.EncodingType.Base64,
+  //           });
+  
+  //           Alert.alert('Success', 'Document saved to Downloads folder or chosen location!');
+  //         } else {
+  //           Alert.alert('Cancelled', 'File save cancelled.');
+  //         }
+  //       } catch (saveError) {
+  //         console.error('Saving error:', saveError);
+  //         Alert.alert('Error', 'Failed to save document.');
+  //       }
+  //     };
+  
+  //     reader.readAsDataURL(blob);
+  //   } catch (error) {
+  //     console.error('Generation failed:', error);
+  //     Alert.alert('Error', error.message);
+  //   }
+  // };
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Legal Document Form</Text>
-      
-      <Text style={styles.label}>Person 1 Name:</Text>
-      <TextInput
-        style={styles.input}
-        value={person1Name}
-        onChangeText={setPerson1Name}
-        placeholder="Enter Person 1 Name"
-      />
+      <Text style={styles.title}>Document Draft Form</Text>
 
-      <Text style={styles.label}>Person 2 Name:</Text>
-      <TextInput
-        style={styles.input}
-        value={person2Name}
-        onChangeText={setPerson2Name}
-        placeholder="Enter Person 2 Name"
-      />
-
-      <Text style={styles.label}>Date:</Text>
-      <TextInput
-        style={styles.input}
-        value={date}
-        onChangeText={setDate}
-        placeholder="YYYY-MM-DD"
-      />
-
-      <Text style={styles.label}>Case Category:</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={caseCategory}
-          onValueChange={(itemValue) => setCaseCategory(itemValue)}
-          style={styles.picker}
-        >
-          <Picker.Item label="Select a category" value="" />
-          <Picker.Item label="Civil" value="civil" />
-          <Picker.Item label="Criminal" value="criminal" />
-          <Picker.Item label="Family" value="family" />
-          <Picker.Item label="Corporate" value="corporate" />
-        </Picker>
-      </View>
-
-      <Text style={styles.label}>Advocate Name (if any):</Text>
-      <TextInput
-        style={styles.input}
-        value={advocateName}
-        onChangeText={setAdvocateName}
-        placeholder="Enter Advocate Name"
-      />
-
-      <Text style={styles.label}>Query:</Text>
-      <TextInput
-        style={[styles.input, styles.promptInput]}
-        value={prompt}
-        onChangeText={setPrompt}
-        placeholder="Enter your Query here"
-        multiline
-      />
+      {Object.entries(formData).map(([key, value]) => (
+        <View key={key}>
+          <Text style={styles.label}>{key.replace(/_/g, ' ')}:</Text>
+          <TextInput
+            style={styles.input}
+            value={value}
+            onChangeText={(text) => handleChange(key, text)}
+            placeholder={`Enter ${key.replace(/_/g, ' ')}`}
+          />
+        </View>
+      ))}
 
       <TouchableOpacity style={styles.button} onPress={handleGenerateDocument}>
-        <Text style={styles.buttonText}>Generate Document</Text>
+        <Text style={styles.buttonText}>Generate & Download</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -90,44 +161,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 30,
+    marginBottom: 20,
     textAlign: 'center',
-    color: '#333',
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 8,
-    color: '#333',
+    marginBottom: 6,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: '#f9f9f9',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 20,
-    fontSize: 16,
-    color: '#333',
-  },
-  pickerContainer: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    marginBottom: 20,
-  },
-  picker: {
-    height: 50,
-    width: '100%',
-    backgroundColor: '#fff',
-  },
-  promptInput: {
-    height: 120,
-    textAlignVertical: 'top',
+    padding: 10,
+    marginBottom: 12,
   },
   button: {
     backgroundColor: '#007AFF',
