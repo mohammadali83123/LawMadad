@@ -10,8 +10,9 @@ import {
 } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-// import { getDocumentAsync } from 'expo-document-picker';
 import * as MediaLibrary from 'expo-media-library';
+import RNFS from 'react-native-fs';
+import { PermissionsAndroid, Platform } from 'react-native';
 
 export default function Form() {
   const [formData, setFormData] = useState({
@@ -40,96 +41,92 @@ export default function Form() {
 
   const handleGenerateDocument = async () => {
     try {
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert('Permission denied', 'Cannot save file without storage permission.');
+          return;
+        }
+      }
+
       const response = await fetch('https://ali4568-lawmadad-documentdraft.hf.space/documentdraft/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-  
+
       if (!response.ok) throw new Error('Failed to generate document');
-  
+      console.log("response", response);
       const blob = await response.blob();
-  
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64Data = reader.result.split(',')[1];
-        const filename = `Affidavit_${formData.full_name.replace(/\s/g, '_')}.docx`;
-        const fileUri = FileSystem.documentDirectory + filename;
-  
+        const fileName = `Affidavit_${formData.full_name.replace(/\s/g, '_')}.docx`;
+
+        // const downloadPath = Platform.select({
+        //   android: `${RNFS.DownloadDirectoryPath}/${fileName}`,
+        // });
+
+        const downloadPath = `${RNFS.DocumentDirectoryPath}/${fileName}`;
+
         try {
-          await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-  
-          const { status } = await MediaLibrary.requestPermissionsAsync();
-          if (status !== 'granted') {
-            Alert.alert('Permission Denied', 'Media library permission is required.');
-            return;
-          }
-  
-          const asset = await MediaLibrary.createAssetAsync(fileUri);
-          await MediaLibrary.createAlbumAsync('Download', asset, false);
-  
-          Alert.alert('Success', 'Document saved to Downloads folder!');
-        } catch (saveError) {
-          console.error('Saving error:', saveError);
-          Alert.alert('Error', 'Failed to save document.');
+          console.log('Writing to:', downloadPath);
+          await RNFS.writeFile(downloadPath, base64Data, 'base64');
+          Alert.alert('Success', `File saved to: File Storage/android/data/com.mohammadali.LawMadad/files/${fileName}`);
+        } catch (err) {
+          console.error('File write error:', err);
+          Alert.alert('Error', 'Failed to save file.');
         }
       };
-  
+
       reader.readAsDataURL(blob);
-    } catch (error) {
-      console.error('Generation failed:', error);
-      Alert.alert('Error', error.message);
+    } catch (err) {
+      console.error('Error saving file:', err);
+      Alert.alert('Error', err.message);
     }
   };
+  const handleShareDocument = async () => {
+  try {
+    const response = await fetch('https://ali4568-lawmadad-documentdraft.hf.space/documentdraft/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
 
-  // const handleGenerateDocument = async () => {
-  //   try {
-  //     const response = await fetch('https://ali4568-lawmadad-documentdraft.hf.space/documentdraft/', {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify(formData),
-  //     });
-  
-  //     if (!response.ok) throw new Error('Failed to generate document');
-  
-  //     const blob = await response.blob();
-  
-  //     const reader = new FileReader();
-  //     reader.onloadend = async () => {
-  //       const base64Data = reader.result.split(',')[1];
-  
-  //       try {
-  //         // Use SAF to let the user pick where to save
-  //         const filename = `Affidavit_${formData.full_name.replace(/\s/g, '_')}.docx`;
-  
-  //         const permission = await getDocumentAsync({
-  //           type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  //           copyToCacheDirectory: false,
-  //         });
-  
-  //         if (permission.type === 'success') {
-  //           await FileSystem.writeAsStringAsync(permission.uri, base64Data, {
-  //             encoding: FileSystem.EncodingType.Base64,
-  //           });
-  
-  //           Alert.alert('Success', 'Document saved to Downloads folder or chosen location!');
-  //         } else {
-  //           Alert.alert('Cancelled', 'File save cancelled.');
-  //         }
-  //       } catch (saveError) {
-  //         console.error('Saving error:', saveError);
-  //         Alert.alert('Error', 'Failed to save document.');
-  //       }
-  //     };
-  
-  //     reader.readAsDataURL(blob);
-  //   } catch (error) {
-  //     console.error('Generation failed:', error);
-  //     Alert.alert('Error', error.message);
-  //   }
-  // };
+    if (!response.ok) throw new Error('Failed to generate document');
+
+    const blob = await response.blob();
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Data = reader.result.split(',')[1];
+      const filename = `Affidavit_${formData.full_name.replace(/\s/g, '_')}.docx`;
+      const fileUri = FileSystem.documentDirectory + filename;
+
+      try {
+        await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(fileUri);
+        } else {
+          Alert.alert('Saved', `File saved at: ${fileUri}`);
+        }
+      } catch (saveError) {
+        console.error('Saving error:', saveError);
+        Alert.alert('Error', 'Failed to save document.');
+      }
+    };
+
+    reader.readAsDataURL(blob);
+  } catch (error) {
+    console.error('Generation failed:', error);
+    Alert.alert('Error', error.message);
+  }
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -147,7 +144,10 @@ export default function Form() {
         </View>
       ))}
 
-      <TouchableOpacity style={styles.button} onPress={handleGenerateDocument}>
+      <TouchableOpacity style={styles.button} onPress={() => {
+  handleGenerateDocument();
+  handleShareDocument();
+}}>
         <Text style={styles.buttonText}>Generate & Download</Text>
       </TouchableOpacity>
     </ScrollView>
