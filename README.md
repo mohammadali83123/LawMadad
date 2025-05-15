@@ -10,6 +10,7 @@ The app features a simple and intuitive two-page structure:
 
 - **Query Input Page**: Users enter a legal query and submit it to the backend for processing.
 - **Response Page**: Displays the AI-generated legal response and provides navigation options.
+- **Document Draft Page**: Allows users to generate, view, and download AI-generated legal document drafts based on their input.
 
 ---
 
@@ -18,8 +19,8 @@ The app features a simple and intuitive two-page structure:
 - 🔐 **Email-based User Authentication**
 - 📩 **Submit Legal Queries** and receive AI-powered answers
 - 🧠 **AI-Powered Responses** customized for Pakistani legal context
-- 🧭 **Role-Based Navigation** after login
 - 📝 **Document Drafting**: Create, edit, and save legal documents in-app
+- 👤 **Profile Page**: View user details, manage account settings, access privacy policy and help center, log out, or delete your account.
 
 ---
 
@@ -78,7 +79,6 @@ LawMadad is currently available on the **Google Play Store** under **Early Acces
 ## 🔮 Future Enhancements
 
 - 💬 **Live Chat** with verified legal advisors
-- 🌐 **Multi-language Support** (Urdu and regional languages)
 - 🎨 Enhanced **UI/UX**
 - ☁️ Cloud sync and storage for document drafts
 
