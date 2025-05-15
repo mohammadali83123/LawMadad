@@ -95,11 +95,6 @@ We welcome community contributions!
 
 > For major features or architectural changes, please create an issue to discuss beforehand.
 
----
-
-## 📄 License
-
-Licensed under the **MIT License**. See the [LICENSE](./LICENSE) file for details.
 
 ---
 
