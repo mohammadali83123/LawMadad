@@ -1,67 +1,115 @@
-LawMadad
-LawMadad is a legal assistance application built using Expo and React Native, designed to help users with legal queries. The app has a simple two-page structure:
+# LawMadad
 
-Query Input Page: Users enter a legal query and submit it to the backend.
+**LawMadad** is a legal assistance mobile application built using **Expo** and **React Native**, designed to help users with their legal needs — from submitting queries to drafting legal documents. It leverages AI models trained on **Pakistani law**, deployed via **Hugging Face Spaces** with a **FastAPI** + **Docker** backend.
 
-Response Page: Displays the response received from the backend and allows users to return to the input page.
+---
 
-Features
-User authentication with email-based login.
+## 📱 App Structure
 
-Query submission to the backend.
+The app features a simple and intuitive two-page structure:
 
-Display of AI-generated legal responses.
+- **Query Input Page**: Users enter a legal query and submit it to the backend for processing.
+- **Response Page**: Displays the AI-generated legal response and provides navigation options.
 
-Role-based navigation after login.
+---
 
-Document Draft Feature: Users can create, edit, and save legal document drafts within the app.
+## ✨ Features
 
-Setup & Installation
-Prerequisites
-Ensure you have the following installed:
+- 🔐 **Email-based User Authentication**
+- 📩 **Submit Legal Queries** and receive AI-powered answers
+- 🧠 **AI-Powered Responses** customized for Pakistani legal context
+- 🧭 **Role-Based Navigation** after login
+- 📝 **Document Drafting**: Create, edit, and save legal documents in-app
 
-Node.js
+---
 
-Expo CLI
+## ⚙️ Setup & Installation
 
-Git
+### 📦 Prerequisites
 
-Clone the Repository
-sh
-Copy
-Edit
+Ensure the following tools are installed:
+
+- [Expo CLI](https://docs.expo.dev/get-started/installation/)
+- [Git](https://git-scm.com/)
+
+### 📥 Clone the Repository
+
+```sh
 git clone https://github.com/your-username/LawMadad.git
 cd LawMadad
-Install Dependencies
-sh
-Copy
-Edit
+```
+
+### 🚀 Run the App Locally
+
+Install dependencies:
+
+```sh
 npm install
-Run the App
-Start the Expo development server:
+```
 
-sh
-Copy
-Edit
+Start the development server:
+
+```sh
 npx expo start
-App Status
-LawMadad is currently published on the Google Play Store under Early Access as part of open testing. Users can try out the app and provide feedback to help us improve before the full release.
+```
 
-Model Deployment
-The AI model powering LawMadad is deployed using Hugging Face Spaces, ensuring reliable and scalable performance for processing legal queries based on Pakistani law.
+---
 
-Future Enhancements
-Implement real-time chat with legal advisors.
+## 🤖 Backend & Model Deployment
 
-Add multi-language support.
+The backend and AI models are deployed using **FastAPI** and **Docker** on **Hugging Face Spaces**.
 
-Improve UI/UX for better user experience.
+- **Legal Query API**:  
+  🌐 [https://huggingface.co/spaces/ali4568/LawMadad](https://huggingface.co/spaces/ali4568/LawMadad)
 
-Contributing
-Feel free to fork the repository and submit pull requests. For major changes, please open an issue first.
+- **Document Draft API**:  
+  🌐 [https://huggingface.co/spaces/ali4568/LawMadad-DocumentDraft](https://huggingface.co/spaces/ali4568/LawMadad-DocumentDraft)
 
-License
-This project is licensed under the MIT License.
+These APIs handle legal query analysis and dynamic document generation tailored to user input.
 
-Contact
-For any issues, contact Mohammad Ali at mohammadali83123@gmail.com.
+---
+
+## 📱 App Status
+
+LawMadad is currently available on the **Google Play Store** under **Early Access**. Users are encouraged to test the app and provide feedback during this open testing phase.
+
+---
+
+## 🔮 Future Enhancements
+
+- 💬 **Live Chat** with verified legal advisors
+- 🌐 **Multi-language Support** (Urdu and regional languages)
+- 🎨 Enhanced **UI/UX**
+- ☁️ Cloud sync and storage for document drafts
+
+---
+
+## 🤝 Contributing
+
+We welcome community contributions!
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/feature-name`)
+3. Commit your changes
+4. Open a Pull Request
+
+> For major features or architectural changes, please create an issue to discuss beforehand.
+
+---
+
+## 📄 License
+
+Licensed under the **MIT License**. See the [LICENSE](./LICENSE) file for details.
+
+---
+
+## 📬 Contact
+
+For questions, collaboration, or bug reports:
+
+**Mohammad Ali**  
+📧 mohammadali83123@gmail.com
+
+---
+
+**LawMadad** – Your AI-powered legal assistant for everyday justice.
